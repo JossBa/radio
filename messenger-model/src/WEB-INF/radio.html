@@ -1,0 +1,52 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="author" content="Sascha Baumeister" />
+		<meta name="dcterms.rightsHolder" content="Sascha Baumeister" />
+		<meta name="dcterms.rights" content="all rights reserved" />
+		<meta name="dcterms.dateCopyrighted" content="2018" />
+
+		<title>Web-Radio</title>
+		<link rel="stylesheet" type="text/css" href="radio.css" />
+		<link rel="icon" type="image/png" href="radio.png"/>
+
+		<script src="js/controller.js"></script>
+		<script src="js/welcome-controller.js"></script>
+
+		<template id="login-template">
+			<section class="login">
+				<fieldset>
+					<legend>Login</legend>
+					<div>
+						<label class="horizontal">Email</label>
+						<input type="email" required="required" maxlength="128" />
+					</div>
+					<div>
+						<label class="horizontal">Password</label>
+						<input type="password" required="required" maxlength="16" />
+					</div>
+				</fieldset>
+				<button type="button">login</button>
+			</section>
+		</template>
+	</head>
+
+
+	<body>
+		<header>
+			<nav class="horizontal">
+				<ul>
+					<li><a>Login</a></li>
+					<li><a>Server Radio</a></li>
+					<li><a>Peer Radio</a></li>
+					<li><a>Preferences</a></li>
+				</ul>
+			</nav>
+		</header>
+		<main></main>
+		<footer>
+			<output></output>
+		</footer>
+	</body>
+</html>
