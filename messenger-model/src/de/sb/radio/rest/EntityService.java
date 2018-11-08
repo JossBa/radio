@@ -19,6 +19,8 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+
+import de.sb.radio.persistence.Album;
 import de.sb.radio.persistence.BaseEntity;
 import de.sb.radio.persistence.Person;
 import de.sb.radio.persistence.Track;
@@ -34,6 +36,10 @@ import de.sb.toolbox.net.RestJpaLifecycleProvider;
  * <li>GET entities/{id}/messagesCaused: Returns the messages caused by the entity matching the given identity.</li>
  * </ul>
  */
+
+// Die Klasse bietet Service-Methoden für alle Arten
+// von Entitäten, ist also polymorph
+
 @Path("entities")
 @Copyright(year = 2013, holders = "Sascha Baumeister")
 public class EntityService {
@@ -106,6 +112,17 @@ public class EntityService {
 			){
 		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
 		final Track requester = radioManager.find(Track.class, trackIdentity);
+		return requester;
+	}
+	
+	@GET
+	@Path("album/{id}")
+	@Produces(APPLICATION_JSON)
+	public Album queryAlbum(
+			@PathParam("id") @Positive final long albumIdentity
+			){
+		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
+		final Album requester = radioManager.find(Album.class, albumIdentity);
 		return requester;
 	}
 

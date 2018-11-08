@@ -193,7 +193,7 @@ public class Person extends BaseEntity {
 		return this.avatar == null ? 0 : this.avatar.getIdentity();
 	}
 
-
+	
 	/**
 	 * Returns the avatar.
 	 * @return the *:1 related avatar
@@ -211,6 +211,7 @@ public class Person extends BaseEntity {
 	public void setAvatar (final Document avatar) {
 		this.avatar = avatar;
 	}
+	
 	
 	@JsonbTransient 
 	public Set<Track> getTracks() {

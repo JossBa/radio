@@ -115,7 +115,7 @@ public class Album extends BaseEntity{
 		this.cover = cover;
 	}
 
-	// @JsonbTransient @XmlAttribute(name = "album") @XmlIDREF
+	@JsonbTransient @XmlAttribute(name = "album") @XmlIDREF
 	public Set<Track> getTracks() {
 		return tracks;
 	}	

@@ -36,15 +36,22 @@ public class Track extends BaseEntity {
 	@Column(nullable = false, updatable = true)
 	private byte[] ordinal;
 	
+	
+	// Ueberall wo JoinColumn steht, muss zusätzliche Methode erstellt werden
+	// das sind sog. Reference Properties, die geladen werden müssen
+	// bedeutet also, dass immer wenn ein Album geladen wird, auch immer die Beziehung zu Tracks dazu geladen werden soll
 	@NotNull
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "albumReference", nullable = false, updatable = true)
 	private Album album;
 	
+	
+	// wenn eine Person gemarshalt wird, dann sollen dazu auch die ownerReferences von Tracks geladen werden
 	@NotNull
 	@ManyToOne (optional = false)
 	@JoinColumn(name = "ownerReference", nullable = false, updatable = true)
 	private Person owner;
+	
 	
 	@NotNull
 	@ManyToOne(optional = false)
@@ -98,6 +105,8 @@ public class Track extends BaseEntity {
 		this.ordinal = ordinal;
 	}
 
+	//@JsonbTransient um zu konfigurieren dass die Information nicht gemarshaled
+	// werden soll --> das wird dann unten mittels der getAlbumReference gemarshallt
 	@JsonbTransient @XmlAttribute(name = "albumReference") @XmlIDREF
 	public Album getAlbum() {
 		return this.album;
@@ -115,6 +124,7 @@ public class Track extends BaseEntity {
 	public void setOwner(final Person owner) {
 		this.owner = owner;
 	}
+
 
 	@JsonbTransient @XmlAttribute(name = "recordingReference") @XmlIDREF
 	public Document getRecording() {
