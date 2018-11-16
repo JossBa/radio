@@ -33,9 +33,6 @@ import de.sb.toolbox.bind.XmlLongToStringAdapter;
  * accessor methods to allow JPA entity proxies to fetch the correct state. Note that this class
  * has a natural ordering that is inconsistent with {@link Object#equals(Object)}.
  */
-@XmlType
-@XmlAccessorType(NONE)
-@XmlSeeAlso({ Person.class, Document.class })
 @JsonbVisibility(JsonProtectedPropertyStrategy.class)
 @Entity
 @Table(schema = "radio", name = "BaseEntity")
@@ -72,8 +69,7 @@ public abstract class BaseEntity implements Comparable<BaseEntity> {
 	 * instance has been inserted into the database.
 	 * @return the identity (primary key)
 	 */
-	@JsonbProperty @XmlAttribute @XmlID
-	@XmlJavaTypeAdapter(type=long.class, value=XmlLongToStringAdapter.class)
+	@JsonbProperty
 	public long getIdentity () {
 		return this.identity;
 	}
@@ -92,7 +88,7 @@ public abstract class BaseEntity implements Comparable<BaseEntity> {
 	 * Returns the version. This property is currently inactive.
 	 * @return the version
 	 */
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public int getVersion () {
 		return this.version;
 	}
@@ -111,7 +107,7 @@ public abstract class BaseEntity implements Comparable<BaseEntity> {
 	 * Returns the creation timestamp.
 	 * @return the creation timestamp in milliseconds since midnight 1/1/1970 UTC
 	 */
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public long getCreationTimestamp () {
 		return this.creationTimestamp;
 	}

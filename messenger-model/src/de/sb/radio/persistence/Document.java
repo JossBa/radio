@@ -59,15 +59,14 @@ import de.sb.toolbox.bind.JsonProtectedPropertyStrategy;
  * representing a billion Dollar a year cash cow for some manufacturers.</li>
  * </ul>
  */
-@XmlType
-@XmlRootElement
 @JsonbVisibility(JsonProtectedPropertyStrategy.class)
 @Entity
 @Table(schema = "radio", name = "Document")
 @PrimaryKeyJoinColumn(name = "documentIdentity")
 @Copyright(year=2013, holders="Sascha Baumeister")
 public class Document extends BaseEntity {
-	static byte[] EMPTY_CONTENT_HASH = HashTools.sha256HashCode(new byte[0]);
+	static byte[] EMPTY_CONTENT = new byte[0];
+	static byte[] EMPTY_CONTENT_HASH = HashTools.sha256HashCode(EMPTY_CONTENT);
 
 	@NotNull @Size(min = 32, max = 32)
 	@Column(nullable = false, updatable = true, length = 32, unique = true)
@@ -83,30 +82,19 @@ public class Document extends BaseEntity {
 
 
 	/**
-	 * Default constructor for JPA, JSON-B and JAX-B.
-	 */
-	protected Document () {
-		this(null, null);
-	}
-
-
-	/**
 	 * Creates a new instance.
-	 * @param contentType the content type
-	 * @param content the content
 	 */
-	public Document (final String contentType, byte[] content) {
-		this.contentHash = HashTools.sha256HashCode(content);
-		this.contentType = contentType;
-		this.content = content;
+	public Document (){
+		this.content = EMPTY_CONTENT;
+		this.contentHash = EMPTY_CONTENT_HASH;
+		this.contentType = "application/octet-stream";
 	}
-
 
 	/**
 	 * Returns the content hash.
 	 * @return the quasi-unique SHA-256 hash of the content
 	 */
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public byte[] getContentHash () {
 		return this.contentHash;
 	}
@@ -116,7 +104,7 @@ public class Document extends BaseEntity {
 	 * Returns the content type.
 	 * @return the content type
 	 */
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public String getContentType () {
 		return this.contentType;
 	}
@@ -135,7 +123,7 @@ public class Document extends BaseEntity {
 	 * Returns the content.
 	 * @return the content
 	 */
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public byte[] getContent () {
 		return this.content;
 	}

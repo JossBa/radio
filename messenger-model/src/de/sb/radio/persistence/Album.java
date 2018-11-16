@@ -29,8 +29,6 @@ import de.sb.toolbox.val.NotEqual;
 /**
  * This class models album entities.
  */
-@XmlType
-@XmlRootElement
 @JsonbVisibility(JsonProtectedPropertyStrategy.class)
 @Entity
 @Table(schema = "radio", name = "Album")
@@ -75,7 +73,7 @@ public class Album extends BaseEntity{
 		this.tracks = Collections.emptySet(); //fuer die mappedBy Seite
 	}
 
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public String getTitle() {
 		return title;
 	}
@@ -85,7 +83,7 @@ public class Album extends BaseEntity{
 		this.title = title;
 	}
 
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public short getReleaseYear() {
 		return releaseYear;
 	}
@@ -95,7 +93,7 @@ public class Album extends BaseEntity{
 		this.releaseYear = releaseYear;
 	}
 
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public byte getTrackCount() {
 		return trackCount;
 	}
@@ -105,7 +103,7 @@ public class Album extends BaseEntity{
 		this.trackCount = trackCount;
 	}
 
-	@JsonbTransient @XmlAttribute(name = "coverReference") @XmlIDREF
+	@JsonbTransient
 	public Document getCover() {
 		return cover;
 	}
@@ -115,9 +113,26 @@ public class Album extends BaseEntity{
 		this.cover = cover;
 	}
 
-	@JsonbTransient @XmlAttribute(name = "album") @XmlIDREF
+	@JsonbTransient
 	public Set<Track> getTracks() {
 		return tracks;
 	}	
 	
+	@JsonbProperty
+	protected long getCoverReference(){
+		return cover.getIdentity();
+	}
+	
+	@JsonbProperty
+	protected long[] getTrackReference(){
+		// durch die Liste von Tracks iterieren und jede einzelne Identity vom Track abfragen
+		long[] trackIds = new long[tracks.size()];
+		int counter = 0;
+		for(Track temp: tracks){
+			trackIds[counter] = temp.getIdentity();
+			counter++;
+		}
+		
+		return trackIds;
+	}
 }

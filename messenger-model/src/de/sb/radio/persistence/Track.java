@@ -9,6 +9,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
@@ -27,14 +28,13 @@ public class Track extends BaseEntity {
 	@Column(nullable = false, updatable = true, length = 127)
 	private String artist;
 	
-	
 	@NotNull @Size(min = 1, max = 31)
 	@Column(nullable = false, updatable = true, length = 127)
 	private String genre;
 	
-	@NotNull
+	@PositiveOrZero
 	@Column(nullable = false, updatable = true)
-	private byte[] ordinal;
+	private byte ordinal;
 	
 	
 	// Ueberall wo JoinColumn steht, muss zusätzliche Methode erstellt werden
@@ -69,7 +69,7 @@ public class Track extends BaseEntity {
 	}
 	
 	
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public String getName() {
 		return this.name;
 	}
@@ -78,7 +78,7 @@ public class Track extends BaseEntity {
 		this.name = name;
 	}
 
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public String getArtist() {
 		return this.artist;
 	}
@@ -87,7 +87,7 @@ public class Track extends BaseEntity {
 		this.artist = artist;
 	}
 	
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public String getGenre() {
 		return this.genre;
 	}
@@ -96,18 +96,18 @@ public class Track extends BaseEntity {
 		this.genre = genre;
 	}
 	
-	@JsonbProperty @XmlAttribute
-	public byte[] getOrdinal() {
+	@JsonbProperty
+	public byte getOrdinal() {
 		return this.ordinal;
 	}
 
-	public void setOrdinal(final byte[] ordinal) {
+	public void setOrdinal(final byte ordinal) {
 		this.ordinal = ordinal;
 	}
 
 	//@JsonbTransient um zu konfigurieren dass die Information nicht gemarshaled
 	// werden soll --> das wird dann unten mittels der getAlbumReference gemarshallt
-	@JsonbTransient @XmlAttribute(name = "albumReference") @XmlIDREF
+	@JsonbTransient
 	public Album getAlbum() {
 		return this.album;
 	}
@@ -116,7 +116,7 @@ public class Track extends BaseEntity {
 		this.album = album;
 	}
 
-	@JsonbTransient @XmlAttribute(name = "ownerReference") @XmlIDREF
+	@JsonbTransient
 	public Person getOwner() {
 		return this.owner;
 	}
@@ -126,7 +126,7 @@ public class Track extends BaseEntity {
 	}
 
 
-	@JsonbTransient @XmlAttribute(name = "recordingReference") @XmlIDREF
+	@JsonbTransient
 	public Document getRecording() {
 		return this.recording;
 	}
@@ -135,8 +135,18 @@ public class Track extends BaseEntity {
 		this.recording = recording;
 	}
 	
-	@JsonbProperty("albumReference")
+	@JsonbProperty
 	protected long getAlbumReference(){
 		return album.getIdentity();
+	}
+	
+	@JsonbProperty
+	protected long getOwnerReference(){
+		return owner.getIdentity();
+	}
+	
+	@JsonbProperty
+	protected long getRecordingReference(){
+		return recording.getIdentity();
 	}
 }

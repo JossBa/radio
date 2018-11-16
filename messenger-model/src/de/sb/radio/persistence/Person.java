@@ -61,7 +61,6 @@ public class Person extends BaseEntity {
 	@JoinColumn(name = "avatarReference", nullable = false, updatable = true)
 	private Document avatar;
 
-	
 	@NotNull 
 	@OneToMany(mappedBy = "owner", cascade = {CascadeType.REMOVE, CascadeType.REFRESH})
 	private Set<Track> tracks;
@@ -79,8 +78,6 @@ public class Person extends BaseEntity {
 	 * Creates a new instance with the given avatar, an empty password and group USER.
 	 * @param avatar the avatar, or {@code null} for none
 	 */
-	
-	
 	public Person (final Document avatar) {
 		this.passwordHash = DEFAULT_HASH;
 		this.group = USER;
@@ -93,7 +90,7 @@ public class Person extends BaseEntity {
 	 * Returns the email.
 	 * @return the email address
 	 */
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public String getEmail () {
 		return this.email;
 	}
@@ -112,7 +109,7 @@ public class Person extends BaseEntity {
 	 * Returns the password hash.
 	 * @return the password hash
 	 */
-	@JsonbTransient @XmlTransient
+	@JsonbTransient
 	public byte[] getPasswordHash () {
 		return this.passwordHash;
 	}
@@ -131,7 +128,7 @@ public class Person extends BaseEntity {
 	 * Returns the group.
 	 * @return the group
 	 */
-	@JsonbProperty @XmlAttribute
+	@JsonbProperty
 	public Group getGroup () {
 		return this.group;
 	}
@@ -150,7 +147,7 @@ public class Person extends BaseEntity {
 	 * Returns the forename.
 	 * @return the forename
 	 */
-	@JsonbProperty @XmlElement
+	@JsonbProperty
 	public String getForename () {
 		return this.forename;
 	}
@@ -169,7 +166,7 @@ public class Person extends BaseEntity {
 	 * Returns the surname.
 	 * @return the surname
 	 */
-	@JsonbProperty @XmlElement
+	@JsonbProperty
 	public String getSurname () {
 		return this.surname;
 	}
@@ -188,7 +185,7 @@ public class Person extends BaseEntity {
 	 * Returns the avatar reference. This operation is provided solely for marshaling purposes.
 	 * @return the identity of the *:1 related avatar, or {@code 0} for none
 	 */
-	@JsonbProperty @XmlTransient
+	@JsonbProperty
 	protected long getAvatarReference () {
 		return this.avatar == null ? 0 : this.avatar.getIdentity();
 	}
@@ -198,7 +195,7 @@ public class Person extends BaseEntity {
 	 * Returns the avatar.
 	 * @return the *:1 related avatar
 	 */
-	@JsonbTransient @XmlAttribute(name = "avatarReference") @XmlIDREF
+	@JsonbTransient
 	public Document getAvatar () {
 		return this.avatar;
 	}
@@ -217,4 +214,22 @@ public class Person extends BaseEntity {
 	public Set<Track> getTracks() {
 		return tracks;
 	}	
+	
+	@JsonbProperty
+	protected long getAvatarReferece(){
+		return avatar.getIdentity();
+	}
+	
+	@JsonbProperty
+	protected long[] getTrackReference(){
+		// durch die Liste von Tracks iterieren und jede einzelne Identity vom Track abfragen
+		long[] trackIds = new long[tracks.size()];
+		int counter = 0;
+		for(Track temp: tracks){
+			trackIds[counter] = temp.getIdentity();
+			counter++;
+		}
+		
+		return trackIds;
+	}
 }
