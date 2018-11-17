@@ -2,6 +2,6 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.wst.jsdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.wst.jsdt.launching.baseBrowserLibrary"/>
-	<classpathentry excluding="WEB-INF/js/welcome-controller.js" kind="src" path=""/>
+	<classpathentry excluding=".DS_Store|.classpath|.project|META-INF/|WEB-INF/" kind="src" path=""/>
 	<classpathentry kind="output" path=""/>
 </classpath>
