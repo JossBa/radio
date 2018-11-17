@@ -3,7 +3,7 @@
  * Copyright (c) 2018 Sascha Baumeister
  */
 "use strict";
-import controller.js;
+
 (function () {
 	// imports
 	const Controller = de_sb_radio.Controller;
