@@ -208,7 +208,7 @@ public class EntityService {
 		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
 		final Person requester = radioManager.find(Person.class, requesterIdentity);
 		
-		if (requesterIdentity != personTemplate.getIdentity()  || requester.getGroup() != ADMIN)
+		if (requesterIdentity != personTemplate.getIdentity()  && requester.getGroup() != ADMIN)
 			throw new ClientErrorException(FORBIDDEN);
 		
 		final boolean insert = personTemplate.getIdentity() == 0;
@@ -237,7 +237,8 @@ public class EntityService {
 		person.setForename(personTemplate.getForename());
 		person.setSurname(personTemplate.getSurname());
 		person.setEmail(personTemplate.getEmail());
-		person.setAvatar(personTemplate.getAvatar());
+		
+		//person.setAvatar(personTemplate.getAvatar());
 		if(password != null)
 			person.setPasswordHash(HashTools.sha256HashCode(password));
 		
