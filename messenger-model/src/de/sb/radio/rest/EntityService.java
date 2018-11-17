@@ -70,12 +70,10 @@ public class EntityService {
 	static private final Set<Byte> EMPTY_BYTE_SINGLETON = Collections.singleton(Byte.valueOf((byte) -1));
 	static private final String QUERY_DOCUMENT_BY_HASH = "select d.identity from Document as d where d.contentHash = :contentHash";
 	static private final String QUERY_ALBUMS = "select a.identity from Album as a where "
-			+ "((:title is null) or (a.title = :title)) and "
-			+ "((:releaseYear is null) or (a.releaseYear = :releaseYear)) and "
-			+ "((:trackCount is null) or (a.trackCount = :trackCount))";
+												+ "((:title is null) or (a.title = :title)) and "
+												+ "((:releaseYear is null) or (a.releaseYear = :releaseYear)) and "
+												+ "((:trackCount is null) or (a.trackCount = :trackCount))";
 
-
-	
 	/**
 	 * Returns the entity with the given identity.
 	 * 
@@ -201,15 +199,20 @@ public class EntityService {
 	@Produces(TEXT_PLAIN)
 	public long createOrModifyPerson (
 			@NotNull @Valid Person personTemplate,
-			@HeaderParam(REQUESTER_IDENTITY) @Positive final long requesterIdentity,
+			@HeaderParam(REQUESTER_IDENTITY) @PositiveOrZero final long requesterIdentity,
 			@HeaderParam("Set-Password") final String password,
 			@QueryParam("avatarReference") final Long avatarReference
 	) {
 		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
 		final Person requester = radioManager.find(Person.class, requesterIdentity);
 		
-		if (requesterIdentity != personTemplate.getIdentity()  && requester.getGroup() != ADMIN)
-			throw new ClientErrorException(FORBIDDEN);
+		
+		if (requester.getGroup() != ADMIN){
+			if(requesterIdentity != personTemplate.getIdentity()){
+				throw new ClientErrorException(FORBIDDEN);
+			}
+		}
+			
 		
 		final boolean insert = personTemplate.getIdentity() == 0;
 		
@@ -307,9 +310,9 @@ public class EntityService {
 	@Consumes(APPLICATION_JSON)
 	@Produces(TEXT_PLAIN)
 	public long createOrModifyAlbum(
-			@NotNull @Valid Album albumTemplate,
-			@HeaderParam(REQUESTER_IDENTITY) @Positive final long requesterIdentity,
-			@QueryParam("coverReference") long coverReference
+			@NotNull Album albumTemplate,
+			@HeaderParam(REQUESTER_IDENTITY) @PositiveOrZero final long requesterIdentity,
+			@QueryParam("coverReference") final Long coverReference
 			){
 		
 		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
@@ -332,12 +335,10 @@ public class EntityService {
 				throw new ClientErrorException(Status.NOT_FOUND);	
 		} 
 		
-		
-		final Document coverRef = radioManager.find(Document.class, coverReference); 
-		if(coverRef == null){
-			album.setCover(albumTemplate.getCover());
-		} else {
-			album.setCover(coverRef);  		
+		if(coverReference != null){
+			final Document cover = radioManager.find(Document.class, coverReference); 
+			if(cover == null) throw new ClientErrorException(NOT_FOUND);
+			album.setCover(cover);  		
 		}
 		
 		album.setReleaseYear(albumTemplate.getReleaseYear());

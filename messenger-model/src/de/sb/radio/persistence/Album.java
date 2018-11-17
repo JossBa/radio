@@ -28,8 +28,8 @@ import de.sb.toolbox.val.NotEqual;
 
 /**
  * This class models album entities.
+ * @JsonbVisibility(JsonProtectedPropertyStrategy.class)
  */
-@JsonbVisibility(JsonProtectedPropertyStrategy.class)
 @Entity
 @Table(schema = "radio", name = "Album")
 @PrimaryKeyJoinColumn(name = "albumIdentity")
