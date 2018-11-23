@@ -81,6 +81,8 @@ public class EntityService {
 			+ "((:forename is null) or (p.forename = :forename)) and " 
 			+ "((:email is null) or (p.email = :email))";
 
+	static private final String QUERY_GENRES = "select distinct t.genre from Track as t";
+	static private final String QUERY_ARTISTS = "select distinct t.artist from Track as t";
 
 
 	/**
@@ -526,6 +528,34 @@ public class EntityService {
 			radioManager.getTransaction().begin();
 		}
 		return document.getIdentity();
+	}
+	
+	@GET
+	@Path("genres")
+	@Produces(APPLICATION_JSON)
+	public Collection<String> queryGenres (
+	) {
+		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
+		final TypedQuery<String> query = radioManager.createQuery(QUERY_GENRES, String.class);
+
+		final List<String> genreResults = query.getResultList();
+
+		Collections.sort(genreResults);
+		return genreResults;
+	}
+	
+	@GET
+	@Path("artists")
+	@Produces(APPLICATION_JSON)
+	public Collection<String> queryArtists (
+	) {
+		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
+		final TypedQuery<String> query = radioManager.createQuery(QUERY_ARTISTS, String.class);
+
+		final List<String> artistResults = query.getResultList();
+
+		Collections.sort(artistResults);
+		return artistResults;
 	}
 
 	/**
