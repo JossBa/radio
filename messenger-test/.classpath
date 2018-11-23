@@ -12,6 +12,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/sb-toolbox-1.1"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/messenger-model_alt"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/messenger-model"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/radio-model"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
