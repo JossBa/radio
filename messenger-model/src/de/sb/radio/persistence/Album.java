@@ -1,9 +1,7 @@
 package de.sb.radio.persistence;
 
-
 import java.util.Collections;
 import java.util.Set;
-
 import javax.json.bind.annotation.JsonbProperty;
 import javax.json.bind.annotation.JsonbTransient;
 import javax.json.bind.annotation.JsonbVisibility;
@@ -22,117 +20,114 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-
 import de.sb.toolbox.bind.JsonProtectedPropertyStrategy;
 import de.sb.toolbox.val.NotEqual;
 
+
 /**
- * This class models album entities.
- * @JsonbVisibility(JsonProtectedPropertyStrategy.class)
+ * This class models album
+ * entities. @JsonbVisibility(JsonProtectedPropertyStrategy.class)
  */
 @Entity
 @Table(schema = "radio", name = "Album")
 @PrimaryKeyJoinColumn(name = "albumIdentity")
-public class Album extends BaseEntity{
-	
-	
-	@NotNull @Size(min = 0, max = 127) // Size steht in der UML
+@JsonbVisibility(JsonProtectedPropertyStrategy.class)
+public class Album extends BaseEntity {
+
+	@NotNull
+	@Size(min = 0, max = 127) // Size steht in der UML
 	@Column(nullable = false, updatable = true, length = 128, unique = true)
 	private String title;
-	
-	@NotNull
+
 	@NotEqual("0")
-	@Column(nullable = false, updatable = true) 
+	@Column(nullable = false, updatable = true)
 	private short releaseYear;
-	
-	@NotNull
-	@NotEqual("0")
+
 	@Positive
 	@Column(nullable = false, updatable = true)
 	private byte trackCount;
-	
-	@NotNull
+
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "coverReference", nullable = false, updatable = true)
 	private Document cover;
-	
-	@NotNull 
-	@OneToMany(mappedBy = "album", cascade = {CascadeType.REMOVE, CascadeType.REFRESH})
-	private Set<Track> tracks;
-	//mappedBy kein @Column
 
-	//wie soll Konstruktor aussehen
-	
-	protected Album(){
+	@NotNull
+	@OneToMany(mappedBy = "album", cascade = { CascadeType.REMOVE, CascadeType.REFRESH })
+	private Set<Track> tracks;
+	// mappedBy kein @Column
+
+
+	// wie soll Konstruktor aussehen
+
+	protected Album() {
 		this(null);
 	}
-	
-	
-	public Album(Document cover){
+
+
+	public Album(Document cover) {
 		this.cover = cover;
-		this.tracks = Collections.emptySet(); //fuer die mappedBy Seite
+		this.tracks = Collections.emptySet(); // fuer die mappedBy Seite
 	}
 
+
 	@JsonbProperty
-	public String getTitle() {
+	public String getTitle () {
 		return title;
 	}
 
 
-	public void setTitle(final String title) {
+	public void setTitle (final String title) {
 		this.title = title;
 	}
 
+
 	@JsonbProperty
-	public short getReleaseYear() {
+	public short getReleaseYear () {
 		return releaseYear;
 	}
 
 
-	public void setReleaseYear(final short releaseYear) {
+	public void setReleaseYear (final short releaseYear) {
 		this.releaseYear = releaseYear;
 	}
 
+
 	@JsonbProperty
-	public byte getTrackCount() {
+	public byte getTrackCount () {
 		return trackCount;
 	}
 
 
-	public void setTrackCount(final byte trackCount) {
+	public void setTrackCount (final byte trackCount) {
 		this.trackCount = trackCount;
 	}
 
+
 	@JsonbTransient
-	public Document getCover() {
+	public Document getCover () {
 		return cover;
 	}
 
 
-	public void setCover(final Document cover) {
+	public void setCover (final Document cover) {
 		this.cover = cover;
 	}
 
+
 	@JsonbTransient
-	public Set<Track> getTracks() {
-		return tracks;
-	}	
-	
-	@JsonbProperty
-	protected long getCoverReference(){
-		return cover.getIdentity();
+	public Set<Track> getTracks () {
+		return this.tracks;
 	}
-	
+
+
 	@JsonbProperty
-	protected long[] getTrackReference(){
-		// durch die Liste von Tracks iterieren und jede einzelne Identity vom Track abfragen
-		long[] trackIds = new long[tracks.size()];
-		int counter = 0;
-		for(Track temp: tracks){
-			trackIds[counter] = temp.getIdentity();
-			counter++;
-		}
-		
-		return trackIds;
+	protected long getCoverReference () {
+		return this.cover.getIdentity();
+	}
+
+
+	@JsonbProperty
+	protected long[] getTrackReferences () {
+		return this.tracks.stream().mapToLong(Track::getIdentity).toArray();
 	}
 }

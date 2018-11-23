@@ -3,14 +3,13 @@ package de.sb.radio.persistence;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
 import de.sb.toolbox.Copyright;
 
 
 /**
  * This facade provides operations to calculate SHA-256 hash codes.
  */
-@Copyright(year=2017, holders="Sascha Baumeister")
+@Copyright(year = 2017, holders = "Sascha Baumeister")
 public final class HashTools {
 
 	static private byte[] DEFAULT = sha256HashCode(new byte[0]);
@@ -18,7 +17,9 @@ public final class HashTools {
 
 	/**
 	 * Returns the quasi-unique SHA-256 hash of the given binary content.
-	 * @param content the binary content, or {@code null} for none
+	 * 
+	 * @param content
+	 *            the binary content, or {@code null} for none
 	 * @return the corresponding SHA-256 hash code
 	 */
 	static public byte[] sha256HashCode (final byte[] content) {
@@ -32,7 +33,9 @@ public final class HashTools {
 
 	/**
 	 * Returns the quasi-unique SHA-256 hash of the given textual context.
-	 * @param content the textual content, or {@code null} for none
+	 * 
+	 * @param content
+	 *            the textual content, or {@code null} for none
 	 * @return the corresponding SHA-256 hash code
 	 */
 	static public byte[] sha256HashCode (final String content) {
@@ -43,5 +46,6 @@ public final class HashTools {
 	/**
 	 * Prevents external instantiation.
 	 */
-	private HashTools () {}
+	private HashTools() {
+	}
 }
