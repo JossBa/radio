@@ -540,7 +540,7 @@ public class EntityService {
 
 		final List<String> genreResults = query.getResultList();
 
-		Collections.sort(genreResults);
+		genreResults.sort(Comparator.naturalOrder());
 		return genreResults;
 	}
 	
@@ -554,7 +554,7 @@ public class EntityService {
 
 		final List<String> artistResults = query.getResultList();
 
-		Collections.sort(artistResults);
+		artistResults.sort(Comparator.naturalOrder());
 		return artistResults;
 	}
 
