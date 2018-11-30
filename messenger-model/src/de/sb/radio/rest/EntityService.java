@@ -589,39 +589,4 @@ public class EntityService {
 		}
 		return processedAudio.getIdentity();
 	}
-	
-	
-	/**
-	 * Returns the messages caused by the entity matching the given identity, in
-	 * natural order.
-	 * 
-	 * @param entityIdentity
-	 *            the entity identity
-	 * @return the messages caused by the matching entity (HTTP 200)
-	 * @throws ClientErrorException
-	 *             (HTTP 404) if the given message cannot be found
-	 * @throws PersistenceException
-	 *             (HTTP 500) if there is a problem with the persistence layer
-	 * @throws IllegalStateException
-	 *             (HTTP 500) if the entity manager associated with the current
-	 *             thread is not open
-	 */
-
-	// @GET
-	// @Path("{id}/messagesCaused")
-	// @Produces({ APPLICATION_JSON, APPLICATION_XML })
-	// public Message[] queryMessagesCaused (
-	// @PathParam("id") @Positive final long entityIdentity
-	// ) {
-	// final EntityManager radioManager =
-	// RestJpaLifecycleProvider.entityManager("radio");
-	// final BaseEntity entity = radioManager.find(BaseEntity.class,
-	// entityIdentity);
-	// if (entity == null) throw new ClientErrorException(NOT_FOUND);
-	//
-	// final Message[] messages = entity.getMessagesCaused().toArray(new
-	// Message[0]);
-	// Arrays.sort(messages);
-	// return messages;
-	// }
 }
