@@ -10,5 +10,9 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/json-yasson-1.0"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/sb-toolbox-1.1"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/radio-model"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jl1.0.1"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/mp3spi1.9.5"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/tritonus_mp3-0.3.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/tritonus_share"/>
 	<classpathentry kind="output" path=""/>
 </classpath>

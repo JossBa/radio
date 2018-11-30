@@ -558,6 +558,39 @@ public class EntityService {
 		return artistResults;
 	}
 
+	// Umwandeln für processed Audio soll audio aufnehmen
+	@POST
+	@Path("processedAudio")
+	@Consumes("audio/*")
+	@Produces(TEXT_PLAIN)
+	public long createProcessedAudio (
+			@NotNull final byte[] content, 
+			@HeaderParam("Content-type") @NotNull final String contentType
+	) {
+		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
+		
+		final TypedQuery<Long> query = radioManager.createQuery(QUERY_DOCUMENT_BY_HASH, Long.class);
+		query.setParameter("contentHash", HashTools.sha256HashCode(content));
+		
+		final List<Long> documentReferences = query.getResultList();
+		if (!documentReferences.isEmpty()) return documentReferences.get(0);
+
+		final Document processedAudio = new Document();
+		processedAudio.setContent(content);
+		processedAudio.setContentType(contentType);
+		radioManager.persist(processedAudio);
+
+		try {
+			radioManager.getTransaction().commit();
+		} catch (PersistenceException error) {
+			throw new ClientErrorException(Status.CONFLICT);
+		} finally {
+			radioManager.getTransaction().begin();
+		}
+		return processedAudio.getIdentity();
+	}
+	
+	
 	/**
 	 * Returns the messages caused by the entity matching the given identity, in
 	 * natural order.
