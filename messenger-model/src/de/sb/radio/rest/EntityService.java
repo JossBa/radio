@@ -366,7 +366,8 @@ public class EntityService {
 	@Produces(APPLICATION_JSON)
 	public Collection<Track> queryTracks (
 			@QueryParam("resultOffset") int resultOffset, 
-			@QueryParam("resultLimit") int resultLimit, @QueryParam("name") String name, 
+			@QueryParam("resultLimit") int resultLimit, 
+			@QueryParam("name") String name, 
 			@QueryParam("artist") String artist, 
 			@QueryParam("genre") @NotNull Set<String> genres,
 			@QueryParam("ordinal") @NotNull Set<Byte> ordinals
@@ -477,7 +478,14 @@ public class EntityService {
 	@GET
 	@Path("documents/{id}")
 	@Produces(WILDCARD)
-	public Response queryDocument (@PathParam("id") final long documentIdentity) {
+	public Response queryDocument (
+			@PathParam("id") final long documentIdentity,
+			@QueryParam("height") final Integer imgHeight,
+			@QueryParam("width") final Integer imgWidth,
+			@QueryParam("volume") final Double audioVolume,
+			@QueryParam("compressionRatio") final Double audioCompressionRatio,
+			@QueryParam("crossfadeDuration") final Double audioCrossfadeDuration
+	) {
 		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
 		final Document document = radioManager.find(Document.class, documentIdentity);
 		if (document == null)
@@ -531,13 +539,19 @@ public class EntityService {
 	}
 	
 	@GET
-	@Path("genres")
+	@Path("tracks/genres")
 	@Produces(APPLICATION_JSON)
 	public Collection<String> queryGenres (
+			@QueryParam("resultOffset") int resultOffset, 
+			@QueryParam("resultLimit") int resultLimit
 	) {
 		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
 		final TypedQuery<String> query = radioManager.createQuery(QUERY_GENRES, String.class);
-
+		if (resultOffset > 0)
+			query.setFirstResult(resultOffset);
+		if (resultLimit > 0)
+			query.setMaxResults(resultLimit);
+		
 		final List<String> genreResults = query.getResultList();
 
 		genreResults.sort(Comparator.naturalOrder());
@@ -545,48 +559,22 @@ public class EntityService {
 	}
 	
 	@GET
-	@Path("artists")
+	@Path("tracks/artists")
 	@Produces(APPLICATION_JSON)
 	public Collection<String> queryArtists (
+			@QueryParam("resultOffset") int resultOffset, 
+			@QueryParam("resultLimit") int resultLimit
 	) {
 		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
 		final TypedQuery<String> query = radioManager.createQuery(QUERY_ARTISTS, String.class);
-
+		if (resultOffset > 0)
+			query.setFirstResult(resultOffset);
+		if (resultLimit > 0)
+			query.setMaxResults(resultLimit);
+		
 		final List<String> artistResults = query.getResultList();
 
 		artistResults.sort(Comparator.naturalOrder());
 		return artistResults;
-	}
-
-	// Umwandeln für processed Audio soll audio aufnehmen
-	@POST
-	@Path("processedAudio")
-	@Consumes("audio/*")
-	@Produces(TEXT_PLAIN)
-	public long createProcessedAudio (
-			@NotNull final byte[] content, 
-			@HeaderParam("Content-type") @NotNull final String contentType
-	) {
-		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
-		
-		final TypedQuery<Long> query = radioManager.createQuery(QUERY_DOCUMENT_BY_HASH, Long.class);
-		query.setParameter("contentHash", HashTools.sha256HashCode(content));
-		
-		final List<Long> documentReferences = query.getResultList();
-		if (!documentReferences.isEmpty()) return documentReferences.get(0);
-
-		final Document processedAudio = new Document();
-		processedAudio.setContent(content);
-		processedAudio.setContentType(contentType);
-		radioManager.persist(processedAudio);
-
-		try {
-			radioManager.getTransaction().commit();
-		} catch (PersistenceException error) {
-			throw new ClientErrorException(Status.CONFLICT);
-		} finally {
-			radioManager.getTransaction().begin();
-		}
-		return processedAudio.getIdentity();
 	}
 }

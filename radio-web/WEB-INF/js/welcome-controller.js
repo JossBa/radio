@@ -12,7 +12,7 @@
 	/**
 	 * Creates a new welcome controller that is derived from an abstract controller.
 	 */
-	const WelcomeController = function () {
+	const WelcomeController = de_sb_radio.WelcomeController = function () {
 		Controller.call(this);
 	}
 	WelcomeController.prototype = Object.create(Controller.prototype);
@@ -56,7 +56,8 @@
 				// support for storing them securely. This workaround uses a classic XMLHttpRequest invocation as a workaround.
 				Controller.sessionOwner = JSON.parse(await this.xhr("/services/people/0", "GET", {"Accept": "application/json"}, "", "text", email, password));
 
-				document.querySelector("header li:last-of-type > a").dispatchEvent(new MouseEvent("click")); 
+				let anchor = document.querySelector("header li:nth-of-type(2) > a");
+				anchor.dispatchEvent(new MouseEvent("click")); 
 			} catch (error) {
 				this.displayError(error);
 			}
