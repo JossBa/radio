@@ -34,6 +34,8 @@ CREATE TABLE Person (
 	groupAlias ENUM("USER", "ADMIN") NOT NULL,
 	surname VARCHAR(31) NOT NULL,
 	forename VARCHAR(31) NOT NULL,
+	lastTransmissionTimestamp BIGINT NULL,
+	lastTransmissionAddress VARCHAR(63) NULL,
 	PRIMARY KEY (personIdentity),
 	UNIQUE KEY (email),
 	FOREIGN KEY (personIdentity) REFERENCES BaseEntity (identity) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -44,7 +46,8 @@ CREATE TABLE Album (
 	albumIdentity BIGINT NOT NULL,
 	coverReference BIGINT NOT NULL,
 	title VARCHAR(127) NOT NULL,
-	publication SMALLINT NOT NULL,
+	releaseYear SMALLINT NOT NULL,
+	trackCount TINYINT NOT NULL,
 	PRIMARY KEY (albumIdentity),
 	FOREIGN KEY (albumIdentity) REFERENCES BaseEntity (identity) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (coverReference) REFERENCES Document (documentIdentity) ON DELETE CASCADE ON UPDATE CASCADE
@@ -54,15 +57,18 @@ CREATE TABLE Track (
 	trackIdentity BIGINT NOT NULL,
 	albumReference BIGINT NOT NULL,
 	ownerReference BIGINT NOT NULL,
+	recordingReference BIGINT NOT NULL,
 	name VARCHAR(127) NOT NULL,
 	artist VARCHAR(127) NOT NULL,
 	genre VARCHAR(31) NOT NULL,
-	ordinal TINYINT NOT NULL,
-	quantity TINYINT NOT NULL,
+	ordinal TINYINT NOT NULL, 
 	PRIMARY KEY (trackIdentity),
 	FOREIGN KEY (trackIdentity) REFERENCES BaseEntity (identity) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (albumReference) REFERENCES Album (albumIdentity) ON DELETE CASCADE ON UPDATE CASCADE,
-	FOREIGN KEY (ownerReference) REFERENCES Person (personIdentity) ON DELETE CASCADE ON UPDATE CASCADE
+	FOREIGN KEY (ownerReference) REFERENCES Person (personIdentity) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (recordingReference) REFERENCES Document (documentIdentity) ON DELETE CASCADE ON UPDATE CASCADE,
+	KEY (artist),
+	KEY (genre)
 );
 
 -- define views
