@@ -1,0 +1,16 @@
+// UML entity-relationship diagram for JPA persistence
+// Render using http://yuml.me/diagram/plain/class/draw
+[Comparable(Type)| +compareTo(other:Type):int; ]
+[Group| +_ADMIN:Group; +_USER:Group; | ]-.-^[Comparable(Type)]
+[BaseEntity| -identity:long; -version:int; -creationTimestamp:long; ...; | +getIdentity():long; #setIdentity(:long); +getCreationTimestamp():long; #setCreationTimestamp(:long); +toString():char 0..*; ...; ]-.-^[Comparable(Type)]
+
+[Document| -contentHash:byte 32..32; -contentType:char 1..63; -content:byte 1..16777215; | +_scaledImageContent;(fileType:char 0..* content:byte 0..* width:int height:int):byte 0..*; ...; ]-^[BaseEntity]
+[Person| -email:char 1..128; -passwordHash:byte 32..32; forename:char 1..31; surname:char 1..31; |; ]-^[BaseEntity]
+[Person]+-group>[Group]
+
+[Album| -cover:Document; -title: char 0..127; -publication: short; | ...; ]-^[BaseEntity]
+[Track| -album:Album; -owner: Person; -name: char 1..127; -artist: char 1..127; -genre: char 1..31; -ordinal: byte; -quantity: byte| ...; ]-^[BaseEntity]
+[Person]0..* - avatar 1>[Document]
+[Album]0..* - cover 1>[Document]
+[Person]1 owner - 0..*>[Track]
+[BaseEntity]-[note: toString(): return class-name + '@' + identity ]
