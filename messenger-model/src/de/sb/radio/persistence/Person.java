@@ -9,6 +9,7 @@ import javax.json.bind.annotation.JsonbTransient;
 import javax.json.bind.annotation.JsonbVisibility;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
@@ -16,6 +17,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
+import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -65,6 +67,10 @@ public class Person extends BaseEntity {
 	@Column(nullable = false, updatable = true, length = 31)
 	private String surname;
 
+	@Valid
+	@Embedded
+	private Transmission lastTransmission;
+
 	@ManyToOne(optional = false) // einzige änderbare Reference
 	@JoinColumn(name = "avatarReference", nullable = false, updatable = true)
 	private Document avatar;
@@ -92,6 +98,7 @@ public class Person extends BaseEntity {
 	public Person(final Document avatar) {
 		this.passwordHash = DEFAULT_HASH;
 		this.group = USER;
+		this.lastTransmission = new Transmission();
 		this.avatar = avatar;
 		this.tracks = Collections.emptySet();
 	}
@@ -149,6 +156,18 @@ public class Person extends BaseEntity {
 	@JsonbProperty
 	public Group getGroup () {
 		return this.group;
+	}
+
+	
+	
+	/**
+	 * Returns the last transmission.
+	 * 
+	 * @return the last transmission
+	 */
+	@JsonbProperty
+	public Transmission getLastTransmission() {
+		return lastTransmission;
 	}
 
 

@@ -33,6 +33,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
@@ -79,7 +81,9 @@ public class EntityService {
 	static private final String QUERY_PEOPLE = "select p.identity from Person p where " 
 			+ "((:surname is null) or (p.surname = :surname)) and " 
 			+ "((:forename is null) or (p.forename = :forename)) and " 
-			+ "((:email is null) or (p.email = :email))";
+			+ "((:email is null) or (p.email = :email)) and "
+			+ "((:lastTransmissionAddress is null) or (p.lastTransmission.address = :lastTransmissionAddress)) and "
+			+ "((:lastTransmissionTimestamp is null) or (p.lastTransmission.timestamp >= :lastTransmissionTimestamp))";
 
 	static private final String QUERY_GENRES = "select distinct t.genre from Track as t";
 	static private final String QUERY_ARTISTS = "select distinct t.artist from Track as t";
@@ -172,13 +176,24 @@ public class EntityService {
 	@GET
 	@Path("people")
 	@Produces(APPLICATION_JSON)
-	public List<Person> returnPeople (@QueryParam("surname") String surname, @QueryParam("forename") String forename, @QueryParam("email") String email) {
+	public List<Person> returnPeople (
+			@Context HttpHeaders headers,
+			@QueryParam("surname") String surname,
+			@QueryParam("forename") String forename,
+			@QueryParam("email") String email,
+			@QueryParam("lastTransmissionAddress") String lastTransmissionAddress,
+			@QueryParam("lastTransmissionTimestamp") Long lastTransmissionTimestamp
+
+	) {
 		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
-		
+		headers.getRequestHeaders();
 		final TypedQuery<Long> query = radioManager.createQuery(QUERY_PEOPLE, Long.class);		
-		query.setParameter("surname", surname);
-		query.setParameter("forename", forename);
-		query.setParameter("email", email);
+		query
+			.setParameter("surname", surname)
+			.setParameter("forename", forename)
+			.setParameter("email", email)
+			.setParameter("lastTransmissionAddress", lastTransmissionAddress)
+			.setParameter("lastTransmissionTimestamp", lastTransmissionTimestamp);
 
 		final List<Long> personReferences = query.getResultList();
 		final List<Person> people = new ArrayList<>();
@@ -199,8 +214,13 @@ public class EntityService {
 	@Path("people")
 	@Consumes(APPLICATION_JSON)
 	@Produces(TEXT_PLAIN)
-	public long createOrModifyPerson (@NotNull @Valid Person personTemplate, @HeaderParam(REQUESTER_IDENTITY) @PositiveOrZero final long requesterIdentity, @HeaderParam("Set-Password") final String password,
-			@QueryParam("avatarReference") final Long avatarReference) {
+	public long createOrModifyPerson (
+			@NotNull @Valid Person personTemplate,
+			@Context HttpHeaders headers,
+			@HeaderParam(REQUESTER_IDENTITY) @PositiveOrZero final long requesterIdentity,
+			@HeaderParam("Set-Password") final String password,
+			@QueryParam("avatarReference") final Long avatarReference
+	) {
 		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
 		final Person requester = radioManager.find(Person.class, requesterIdentity);
 
@@ -209,7 +229,7 @@ public class EntityService {
 				throw new ClientErrorException(FORBIDDEN);
 			}
 		}
-
+		 headers.toString();
 		final boolean insert = personTemplate.getIdentity() == 0;
 
 		final Person person;
@@ -243,6 +263,8 @@ public class EntityService {
 		person.setForename(personTemplate.getForename());
 		person.setSurname(personTemplate.getSurname());
 		person.setEmail(personTemplate.getEmail());
+		person.getLastTransmission().setAddress(personTemplate.getLastTransmission().getAddress());
+		person.getLastTransmission().setTimestamp(personTemplate.getLastTransmission().getTimestamp());
 
 		// person.setAvatar(personTemplate.getAvatar());
 		if (password != null)

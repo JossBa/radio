@@ -9,9 +9,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jdbc-mysql-5.1"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jersey-2.26"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/json-yasson-1.0"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/mp3spi-1.9.5"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/sb-toolbox-1.1"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/messenger-model_alt"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/radio-model"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

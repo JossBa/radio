@@ -9,6 +9,11 @@ body {
 	color: #221100; background: #ebebeb;
 }
 
+
+select {
+
+	width: 300px;
+}
 section {
 	display: block;
 }

@@ -6,6 +6,8 @@
 (function () {
 	// imports
 	const Controller = de_sb_radio.Controller;
+	let AUDIO_CONTEXT_CONSTRUCTOR = window.AudioContext || window.webkitAudioContext;
+	
 
 
 	/**
@@ -13,6 +15,33 @@
 	 */
 	const ServerRadioController = function () {
 		Controller.call(this);
+		
+		
+		let localAudioContext = new AudioContext();
+		Object.defineProperty(this, "audioContext", {
+			enumerable: true,
+			configurable: false,
+			get: function () { 
+				return localAudioContext;
+			}	
+		});
+		
+		
+		
+		let localTracks = [];
+		Object.defineProperty(this, "tracks", {
+			enumerable: true,
+			configurable: false,
+			get: function () { 
+				return localTracks;
+			}	
+		});
+		
+		Object.defineProperty(this, "trackPosition", {
+			enumerable: true,
+			configurable: false,
+			value: 0
+		});
 	}
 	ServerRadioController.prototype = Object.create(Controller.prototype);
 	ServerRadioController.prototype.constructor = ServerRadioController;
@@ -63,11 +92,9 @@
 				
 				mainElement.appendChild(sectionElement);
 				mainElement.querySelector("button").addEventListener("click", event => this.startRadio());
-				
 			} catch (error) {
 				this.displayError(error);
 			}
-			
 		}
 	});
 
@@ -108,8 +135,11 @@
 				let response = await fetch(uri, {method: "GET", credentials: "include", headers: {accept: "application/json"}});
 				if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
 				const tracks = await response.json();
+				this.tracks.length = 0;
+				Array.prototype.push.apply(this.tracks, tracks);
+				this.trackPosition = 0;
 				
-				for (let track of tracks) {
+				for (let track of this.tracks) {
 					let p = document.createElement("p")
 					p.appendChild(document.createTextNode(track.name));
 					sectionElement.appendChild(p);
