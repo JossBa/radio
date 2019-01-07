@@ -267,12 +267,6 @@ public class Person extends BaseEntity {
 
 
 	@JsonbProperty
-	protected long getAvatarReferece () {
-		return avatar.getIdentity();
-	}
-
-
-	@JsonbProperty
 	protected long[] getTrackReference () {
 		// durch die Liste von Tracks iterieren und jede einzelne Identity vom
 		// Track abfragen
