@@ -40,7 +40,9 @@
 		Object.defineProperty(this, "trackPosition", {
 			enumerable: true,
 			configurable: false,
-			value: 0
+			value: 0,
+			writable: true
+			
 		});
 	}
 	ServerRadioController.prototype = Object.create(Controller.prototype);
