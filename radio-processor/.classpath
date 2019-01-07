@@ -7,6 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry exported="true" kind="lib" path="/Users/Nadavbabai/Documents/HTW/4/Projekte/awd-new/user-libraries/sb-toolbox-1.1/sb-toolbox-1.1.8.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/sb-toolbox-1.1"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
