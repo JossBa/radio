@@ -16,6 +16,7 @@
 	const ServerRadioController = function () {
 		Controller.call(this);
 		
+	
 		
 		let localAudioContext = new AudioContext();
 		Object.defineProperty(this, "audioContext", {
@@ -147,17 +148,37 @@
 					sectionElement.appendChild(p);
 				}
 				
-				let videoElement = document.createElement("audio");
-				sectionElement.appendChild(videoElement);
-				videoElement.setAttribute("autoplay", "");
-				videoElement.setAttribute("controls", "");	
-				videoElement.src = "/services/documents/" + tracks[0].recordingReference;
+				this.startTrack(tracks[0].recordingReference);
+				
+	
+	
+	
 			} catch (error) {
 				this.displayError(error);
 			}
 		}
 	});
+	
+	Object.defineProperty(ServerRadioController.prototype, "startTrack", {
+		enumerable: false,
+		configurable: false,
+		value: async function (recordingReference) {
+				const uri = "/services/documents/" + recordingReference;
+				let response = await fetch(uri, {method: "GET", credentials: "include", headers: {accept: "audio/*"}});
+				if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
+				const audioBuffer = await response.arrayBuffer();
+				const decodedBuffer = await this.audioContext.decodeAudioData(audioBuffer);
+				let audioSource = this.audioContext.createBufferSource();
+				audioSource.loop = false;
+				audioSource.buffer = decodedBuffer;
+				audioSource.connect(this.audioContext.destination);
+				audioSource.start();
+				// TODO: Kann man aus decoded buffer die Audiolänge abfragen oder ermitteln?
+				// wenn ja, Länge zurückgeben. (vorzugsweise ms); Callback registrieren.
+		}
+	});
 
+	
 
 	/**
 	 * Perform controller callback registration during DOM load event handling.
