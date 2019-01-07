@@ -95,15 +95,16 @@
 					this.playlist.push(files.item(i));
 				}
 				
-				this.startTrack(files.item(0));
+				this.startCurrentTrack();
 		}
 	});
 
 
-	Object.defineProperty(PeerRadioController.prototype, "startTrack", {
+	Object.defineProperty(PeerRadioController.prototype, "startCurrentTrack", {
 		enumerable: false,
 		configurable: false,
-		value: async function (recordingFile) {
+		value: async function () {
+		 		const recordingFile = this.playlist[++this.position];
 				const audioBuffer = await readFile(recordingFile);
 				const decodedBuffer = await this.audioContext.decodeAudioData(audioBuffer);
 				let audioSource = this.audioContext.createBufferSource();
