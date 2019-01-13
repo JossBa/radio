@@ -8,21 +8,12 @@
 	// imports
 	const Controller = de_sb_radio.Controller;
 
-
 	/**
 	 * Creates a new welcome controller that is derived from an abstract controller.
 	 */
 	const PeerRadioController = function () {
 		Controller.call(this);
 		
-		let localAudioContext = new AudioContext();
-		Object.defineProperty(this, "audioContext", {
-			enumerable: true,
-			configurable: false,
-			get: function () { 
-				return localAudioContext;
-			}	
-		});
 		
 		let localPlaylist = [];
 		Object.defineProperty(this, "playlist", {
@@ -106,11 +97,11 @@
 		value: async function () {
 		 		const recordingFile = this.playlist[++this.position];
 				const audioBuffer = await readFile(recordingFile);
-				const decodedBuffer = await this.audioContext.decodeAudioData(audioBuffer);
-				let audioSource = this.audioContext.createBufferSource();
+				const decodedBuffer = await Controller.audioContext.decodeAudioData(audioBuffer);
+				let audioSource = Controller.audioContext.createBufferSource();
 				audioSource.loop = false;
 				audioSource.buffer = decodedBuffer;
-				audioSource.connect(this.audioContext.destination);
+				audioSource.connect(Controller.audioContext.destination);
 				audioSource.start();
 				// TODO: Kann man aus decoded buffer die Audiolänge abfragen oder ermitteln?
 				// wenn ja, Länge zurückgeben. (vorzugsweise ms); Callback registrieren.
