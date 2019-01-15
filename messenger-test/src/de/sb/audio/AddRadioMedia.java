@@ -23,8 +23,8 @@ public class AddRadioMedia {
 			try {	
 				em.getTransaction().begin();
 				
-				final Path audioPath = Paths.get("/Users/Nadavbabai/Documents/HTW/4/Projekte/RadioData/Cigarettes After Sex - Nothings Gonna Hurt You Baby.mp3");
-				final Path coverPath = Paths.get("/Users/Nadavbabai/Documents/HTW/4/Projekte/RadioData/Cigarettes After Sex - Nothings Gonna Hurt You Baby.png");
+				final Path audioPath = Paths.get("/Users/Nadavbabai/Documents/HTW/4/Projekte/awd-new/RadioData/04_Creep.mp3");
+				final Path coverPath = Paths.get("/Users/Nadavbabai/Documents/HTW/4/Projekte/awd-new/RadioData/radiohead_cover.jpg");
 
 				Person owner = em.find(Person.class, 5L);
 				if(owner == null) throw new IllegalStateException();
@@ -45,9 +45,9 @@ public class AddRadioMedia {
 				}
 				
 				Album album = new Album(cover);
-				album.setTitle("I.");
-				album.setTrackCount((byte) 4);
-				album.setReleaseYear((short) 2012);
+				album.setTitle("Pablo Honey");
+				album.setTrackCount((byte) 12);
+				album.setReleaseYear((short) 2008);
 				em.persist(album);
 				try {
 					em.getTransaction().commit();
@@ -56,10 +56,10 @@ public class AddRadioMedia {
 				}
 			
 				Track track = new Track(audio, album, owner);
-				track.setGenre("Indie");
-				track.setName("Nothing's Gonna Hurt You Baby");
-				track.setArtist("Cigarettes After Sex");
-				track.setOrdinal((byte) 1); 
+				track.setGenre("Rock");
+				track.setName("Creep");
+				track.setArtist("Radiohead");
+				track.setOrdinal((byte) 2); 
 				em.persist(track);
 				em.getTransaction().commit();
 			} finally {
