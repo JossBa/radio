@@ -24,21 +24,6 @@
 			}	
 		});
 		
-		let localPlaylist = [];
-		Object.defineProperty(this, "playlist", {
-			enumerable: true,
-			configurable: false,
-			get: function () { 
-				return localPlaylist;
-			}	
-		});
-		
-		Object.defineProperty(this, "position", {
-			enumerable: true,
-			configurable: false,
-			writable: true,
-			value: -1
-		});
 	}
 	PeerRadioController.prototype = Object.create(Controller.prototype);
 	PeerRadioController.prototype.constructor = PeerRadioController;
@@ -58,54 +43,100 @@
 				return;
 			}
 			
+			
 			let mainElement = document.querySelector("main");
 			let sectionElement = document.querySelector("#peer-radio-template").content.cloneNode(true).firstElementChild;
-			let inputElement = sectionElement.querySelector("input");
-			inputElement.addEventListener("change", event => this.pushPlaylist(event.target.files), false);
-			let buttonElement = sectionElement.querySelector("button:nth-of-type(2)");
-			buttonElement.addEventListener("click", event => this.addToPlaylist());	
+			let buttonElements = sectionElement.querySelectorAll("button");
+			buttonElements[0].addEventListener("click", event => this.displaySenderSection());
+			buttonElements[1].addEventListener("click", event => this.displayReceiverSection());
 			mainElement.appendChild(sectionElement);
 		}
 	});
 	
 	
-	Object.defineProperty(PeerRadioController.prototype, "pushPlaylist", {
+	/**
+	 * Displays the sender section view.
+	 */
+	Object.defineProperty(PeerRadioController.prototype, "displaySenderSection", {
+		enumerable: false,
+		configurable: false,
+		writable: true,
+		value: function () {
+			let mainElement = document.querySelector("main");
+			while (mainElement.childElementCount > 1) {
+				mainElement.removeChild(mainElement.lastChild);
+			}
+
+			let sectionElement = document.querySelector("#peer-radio-sender-template").content.cloneNode(true).firstElementChild;
+			let inputElement = sectionElement.querySelector("input");
+			inputElement.addEventListener("change", event => this.addToPlaylist(event.target.files), false);
+			let buttonElement = sectionElement.querySelector("button");
+			buttonElement.addEventListener("click", event => this.removeFromPlaylist());	
+			mainElement.appendChild(sectionElement);
+		}
+	});
+	
+		
+	/**
+	 * Displays the receiver section view.
+	 */
+	Object.defineProperty(PeerRadioController.prototype, "displayReceiverSection", {
+		enumerable: false,
+		configurable: false,
+		writable: true,
+		value: function () {
+			let mainElement = document.querySelector("main");
+			while (mainElement.childElementCount > 1) {
+				mainElement.removeChild(mainElement.lastChild);
+			}
+			// TODO: to implement display receiver section.
+		}
+	});
+	
+	
+	Object.defineProperty(PeerRadioController.prototype, "addToPlaylist", {
 		enumerable: false,
 		configurable: false,
 		value: function (paths) {
 			let selectElement = document.querySelector("main select.playlist");
-		
+			let empty = selectElement.querySelectorAll("option").length == 0;
+			
 			for (let path of paths) {
 				let optionElement = document.createElement("option");
 				optionElement.appendChild(document.createTextNode(path.name));
-				optionElement.value = path;
+				optionElement.filePath = path;
 				selectElement.appendChild(optionElement);
 			}
+			
+			if (empty && paths.length > 0) {
+				this.startTopTrack();
+			} 
+			
 		}
 	});
 	
 
-	Object.defineProperty(PeerRadioController.prototype, "addToPlaylist", {
+	Object.defineProperty(PeerRadioController.prototype, "removeFromPlaylist", {
 		enumerable: false,
 		configurable: false,
-		value: async function () {
-				let inputElement = document.querySelector("section.radio-peer > input");
-				let files = inputElement.files;
-				for (let i = 0; i < files.length; ++i) {
-					this.playlist.push(files.item(i));
-				}
-				
-				this.startCurrentTrack();
+		value: function () {
+			let selectElement = document.querySelector("main select.playlist");
+			let optionElements = selectElement.querySelectorAll('option:checked');
+			
+			for (let optionElement of optionElements) {
+				selectElement.removeChild(optionElement);
+			}	
 		}
 	});
 
 
-	Object.defineProperty(PeerRadioController.prototype, "startCurrentTrack", {
+	Object.defineProperty(PeerRadioController.prototype, "startTopTrack", {
 		enumerable: false,
 		configurable: false,
 		value: async function () {
-		 		const recordingFile = this.playlist[++this.position];
-				const audioBuffer = await readFile(recordingFile);
+				let optionElement = document.querySelector("main select.playlist option");
+		 		const recordingFile = optionElement.filePath;
+				const audioBuffer = await readAsArrayBuffer(recordingFile);
 				const decodedBuffer = await this.audioContext.decodeAudioData(audioBuffer);
 				let audioSource = this.audioContext.createBufferSource();
 				audioSource.loop = false;
@@ -114,24 +145,29 @@
 				audioSource.start();
 				// TODO: Kann man aus decoded buffer die Audiolänge abfragen oder ermitteln?
 				// wenn ja, Länge zurückgeben. (vorzugsweise ms); Callback registrieren.
+				// TODO: setTimeout(function() { your_func(); }, 5000); <Die Länge der Track. Aufgrund byte array. kann man decodieren.
 		}
 	});
 	
 	
-	function readFile (inputFile) {
-		const fileReader = new FileReader();
-		return new Promise((resolve, reject) => {
-			fileReader.onerror = () => {
-				fileReader.abort();
-				reject(new Error("Problem reading file."));
-			};
 	
-			fileReader.onload = () => {
-				resolve(fileReader.result);
-			};
-			fileReader.readAsArrayBuffer(inputFile);
-		});
+	/**
+	 * Returns a promise of array buffer content read from the given file,
+	 * which can be evaluated using the await command. The latter throws an
+	 * error if reading said file fails.
+	 * @param {File} file the file to be read
+	 * @return {Promise} the promise of array buffer content read from the given file
+	 */
+	function readAsArrayBuffer (file) {
+	    return new Promise((resolve, reject) => {
+	        let reader = new FileReader();
+	        reader.onload = () => resolve(reader.result);
+	        reader.onerror = reject;
+	        reader.readAsArrayBuffer(file);
+	    });
 	}
+	
+	
 	
 	
 	/**
