@@ -11,7 +11,15 @@ this.de_sb_radio = this.de_sb_radio || {};
 	 * Creates an "abstract" controller.
 	 */
 	const Controller = de_sb_radio.Controller = function () {}
-
+	
+	let localAudioContext = new AudioContext();
+	Object.defineProperty(Controller, "audioContext", {
+		enumerable: true,
+		configurable: false,
+		get: function () { 
+			return localAudioContext;
+		}	
+	});
 
 	/**
 	 * Displays the view associated with this controller.

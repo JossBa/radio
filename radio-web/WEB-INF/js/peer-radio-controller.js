@@ -24,21 +24,6 @@
 			}	
 		});
 		
-		let localPlaylist = [];
-		Object.defineProperty(this, "playlist", {
-			enumerable: true,
-			configurable: false,
-			get: function () { 
-				return localPlaylist;
-			}	
-		});
-		
-		Object.defineProperty(this, "position", {
-			enumerable: true,
-			configurable: false,
-			writable: true,
-			value: -1
-		});
 	}
 	PeerRadioController.prototype = Object.create(Controller.prototype);
 	PeerRadioController.prototype.constructor = PeerRadioController;
