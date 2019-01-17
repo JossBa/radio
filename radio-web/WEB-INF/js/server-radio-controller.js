@@ -16,19 +16,6 @@
 	const ServerRadioController = function () {
 		Controller.call(this);
 		
-	
-		
-		let localAudioContext = new AudioContext();
-		Object.defineProperty(this, "audioContext", {
-			enumerable: true,
-			configurable: false,
-			get: function () { 
-				return localAudioContext;
-			}	
-		});
-		
-		
-		
 		let localTracks = [];
 		Object.defineProperty(this, "tracks", {
 			enumerable: true,
@@ -167,11 +154,11 @@
 				let response = await fetch(uri, {method: "GET", credentials: "include", headers: {accept: "audio/*"}});
 				if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
 				const audioBuffer = await response.arrayBuffer();
-				const decodedBuffer = await this.audioContext.decodeAudioData(audioBuffer);
-				let audioSource = this.audioContext.createBufferSource();
+				const decodedBuffer = await Controller.audioContext.decodeAudioData(audioBuffer);
+				let audioSource = Controller.audioContext.createBufferSource();
 				audioSource.loop = false;
 				audioSource.buffer = decodedBuffer;
-				audioSource.connect(this.audioContext.destination);
+				audioSource.connect(Controller.audioContext.destination);
 				audioSource.start();
 				// TODO: Kann man aus decoded buffer die Audiolänge abfragen oder ermitteln?
 				// wenn ja, Länge zurückgeben. (vorzugsweise ms); Callback registrieren.
