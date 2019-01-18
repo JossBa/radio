@@ -14,16 +14,6 @@
 	 */
 	const PeerRadioController = function () {
 		Controller.call(this);
-		
-		let localAudioContext = new AudioContext();
-		Object.defineProperty(this, "audioContext", {
-			enumerable: true,
-			configurable: false,
-			get: function () { 
-				return localAudioContext;
-			}	
-		});
-		
 	}
 	PeerRadioController.prototype = Object.create(Controller.prototype);
 	PeerRadioController.prototype.constructor = PeerRadioController;
@@ -54,6 +44,63 @@
 	});
 	
 	
+		/**
+	 * Peer to peer access
+	 */
+	Object.defineProperty(PeerRadioController.prototype, "initPeerAccess", {
+		enumerable: false,
+		configurable: false,
+		writable: false,
+		value: async function () {
+			  var constraints = {
+    		 	video: false,
+    			audio: true,
+ 				 };
+			  if(navigator.mediaDevices.getUserMedia) {
+				    try {
+				       let stream =	await navigator.mediaDevices.getUserMedia(constraints);
+				   	   this.startTopTrack(stream);
+				    } catch (error) {
+				    	this.errorHandler(error);
+				    }
+			  } else {
+			    alert('Your browser does not support getUserMedia API');
+			  }						
+		}
+	});
+	
+	
+			/**
+	 * Peer to peer access
+	 */
+	Object.defineProperty(PeerRadioController.prototype, "errorHandler", {
+		enumerable: false,
+		configurable: false,
+		writable: false,
+		value: function (error) {
+			console.log(error);
+		}
+
+	});
+	
+	
+	
+	
+			/**
+	 * Get UserMedia
+	 */
+	Object.defineProperty(PeerRadioController.prototype, "getUserMediaSuccess", {
+		enumerable: false,
+		configurable: false,
+		writable: false,
+		value: function () {
+						
+		}
+	});
+	
+	
+	
+	
 	/**
 	 * Displays the sender section view.
 	 */
@@ -62,6 +109,7 @@
 		configurable: false,
 		writable: true,
 		value: function () {
+		    
 			let mainElement = document.querySelector("main");
 			while (mainElement.childElementCount > 1) {
 				mainElement.removeChild(mainElement.lastChild);
@@ -90,6 +138,7 @@
 				mainElement.removeChild(mainElement.lastChild);
 			}
 			// TODO: to implement display receiver section.
+			console.log(Controller.audioSource);
 		}
 	});
 	
@@ -109,7 +158,8 @@
 			}
 			
 			if (empty && paths.length > 0) {
-				this.startTopTrack();
+			//	this.startTopTrack();
+			 	this.initPeerAccess();	// async function call, wird nicht sofort ausgeführt
 			} 
 			
 		}
@@ -129,25 +179,18 @@
 		}
 	});
 
-
 	Object.defineProperty(PeerRadioController.prototype, "startTopTrack", {
 		enumerable: false,
 		configurable: false,
-		value: async function () {
+		value: async function (stream) {
 				let optionElement = document.querySelector("main select.playlist option");
-		 		const recordingFile = optionElement.filePath;
-				const audioBuffer = await readAsArrayBuffer(recordingFile);
-				const decodedBuffer = await this.audioContext.decodeAudioData(audioBuffer);
-				let audioSource = this.audioContext.createBufferSource();
+				let audioSource = Controller.audioContext.createMediaStreamSource(stream);
 				audioSource.loop = false;
-				audioSource.buffer = decodedBuffer;
-				audioSource.connect(this.audioContext.destination);
-				audioSource.start();
-				// TODO: Kann man aus decoded buffer die Audiolänge abfragen oder ermitteln?
-				// wenn ja, Länge zurückgeben. (vorzugsweise ms); Callback registrieren.
-				// TODO: setTimeout(function() { your_func(); }, 5000); <Die Länge der Track. Aufgrund byte array. kann man decodieren.
+				audioSource.connect(Controller.audioContext.destination);
+				// TODO: Kann man aus audio context / audioSource ein event call back registrieren für das ende des Liedes. 				
 		}
 	});
+	
 	
 	
 	
