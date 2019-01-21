@@ -19,6 +19,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 import javax.persistence.TypedQuery;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -44,6 +45,8 @@ import de.sb.radio.persistence.Document;
 import de.sb.radio.persistence.HashTools;
 import de.sb.radio.persistence.Person;
 import de.sb.radio.persistence.Track;
+import de.sb.radio.processor.Compressor;
+import de.sb.radio.processor.Processor;
 import de.sb.toolbox.Copyright;
 import de.sb.toolbox.net.RestJpaLifecycleProvider;
 import de.sb.toolbox.val.NotEqual;
@@ -500,19 +503,27 @@ public class EntityService {
 	@GET
 	@Path("documents/{id}")
 	@Produces(WILDCARD)
-	public Response queryDocument (
+	public Response findDocument (
 			@PathParam("id") final long documentIdentity,
 			@QueryParam("height") final Integer imgHeight,
 			@QueryParam("width") final Integer imgWidth,
 			@QueryParam("volume") final Double audioVolume,
-			@QueryParam("compressionRatio") final Double audioCompressionRatio,
-			@QueryParam("crossfadeDuration") final Double audioCrossfadeDuration
-	) {
+			@QueryParam("compressionRatio") final Double audioCompressionRatio
+	) throws UnsupportedAudioFileException {
 		final EntityManager radioManager = RestJpaLifecycleProvider.entityManager("radio");
 		final Document document = radioManager.find(Document.class, documentIdentity);
-		if (document == null)
-			throw new ClientErrorException(Status.NOT_FOUND);
-		return Response.ok(document.getContent(), document.getContentType()).build();
+		if (document == null) throw new ClientErrorException(Status.NOT_FOUND);
+		
+		byte[] content = document.getContent();
+		if (document.getContentType().startsWith("image/") & imgHeight != null & imgWidth != null) {
+			content = Document.scaledImageContent(document.getContentType().substring(6), content, imgWidth, imgHeight);
+		} else if ((document.getContentType().startsWith("audio/") & audioCompressionRatio != null) && audioCompressionRatio != 1) {
+			final Compressor compressor = new Compressor();
+			compressor.setCompressionRatio(audioCompressionRatio);
+			content = Document.processedAudioContent(content, compressor);
+		}
+		
+		return Response.ok(content, document.getContentType()).build();
 	}
 
 

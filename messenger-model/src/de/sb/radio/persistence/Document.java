@@ -1,11 +1,15 @@
 package de.sb.radio.persistence;
 
+import static java.nio.ByteOrder.LITTLE_ENDIAN;
+
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+
 import javax.imageio.ImageIO;
 import javax.json.bind.annotation.JsonbProperty;
 import javax.json.bind.annotation.JsonbTransient;
@@ -14,12 +18,20 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat.Encoding;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+
+import de.sb.radio.processor.Processor;
 import de.sb.toolbox.Copyright;
 import de.sb.toolbox.bind.JsonProtectedPropertyStrategy;
 
@@ -83,9 +95,14 @@ import de.sb.toolbox.bind.JsonProtectedPropertyStrategy;
 @JsonbVisibility(JsonProtectedPropertyStrategy.class)
 @Copyright(year = 2013, holders = "Sascha Baumeister")
 public class Document extends BaseEntity {
-	static byte[] EMPTY_CONTENT = new byte[0];
-	static byte[] EMPTY_CONTENT_HASH = HashTools.sha256HashCode(EMPTY_CONTENT);
-
+	static private final byte[] EMPTY_CONTENT = new byte[0];
+	static private final byte[] EMPTY_CONTENT_HASH = HashTools.sha256HashCode(EMPTY_CONTENT);
+	static private final int PCM_SIGNED_SIZE = 2;
+	static private final double POS_NORM = +1D / Short.MAX_VALUE;
+	static private final double NEG_NORM = -1D / Short.MIN_VALUE;
+	static private final double POS_DENORM = +1D * Short.MAX_VALUE;
+	static private final double NEG_DENORM = -1D * Short.MIN_VALUE;
+	
 	@NotNull
 	@Size(min = 32, max = 32)
 	@Column(nullable = false, updatable = true, length = 32, unique = true)
@@ -221,6 +238,133 @@ public class Document extends BaseEntity {
 			// there should never be I/O errors with byte array based I/O
 			// streams
 			throw new AssertionError(exception);
+		}
+	}
+	
+
+	/**
+	 * Converts the given audio file content into WavE format, and processes it using the given audio processor.
+	 * @param audioContent the audio file content to be processed
+	 * @param audioProcessor the audio processor
+	 * @return the processed WAVE audio file content
+	 * @throws NullPointerException if any of the given arguments is {@code null}
+	 * @throws UnsupportedAudioFileException if the given content is not valid audio file data recognized by the system
+	 */
+	static public byte[] processedAudioContent (final byte[] audioContent, final Processor audioProcessor) throws NullPointerException, UnsupportedAudioFileException {
+		final AudioFormat sourceFormat = extractAudioFrameFormat(audioContent);
+		final float frameRate = sourceFormat.getSampleRate();
+		final int frameWidth = sourceFormat.getChannels();
+		final AudioFormat audioFrameFormat = new AudioFormat(Encoding.PCM_SIGNED, frameRate, PCM_SIGNED_SIZE * Byte.SIZE, frameWidth, PCM_SIGNED_SIZE * frameWidth, frameRate, false);
+
+		final byte[] audioFrameData = convertToAudioFrames(audioContent, audioFrameFormat);
+		processAudioFrames(audioFrameData, audioFrameFormat.getChannels(), audioProcessor);
+		return convertToAudioContent(audioFrameData, audioFrameFormat, Type.WAVE);
+	}
+
+
+	/**
+	 * Returns the audio frame format matching the given audio file content.
+	 * @param audioContent the audio file content
+	 * @return the matching audio frame format
+	 * @throws NullPointerException if the given argument is {@code null}
+	 * @throws UnsupportedAudioFileException if the given content is not valid audio file data recognized by the system
+	 */
+	static private AudioFormat extractAudioFrameFormat (final byte[] audioContent) throws NullPointerException, UnsupportedAudioFileException {
+		try {
+			try (ByteArrayInputStream byteSource = new ByteArrayInputStream(audioContent)) {
+				return AudioSystem.getAudioFileFormat(byteSource).getFormat();
+			}
+		} catch (final IOException exception) {
+			throw new AssertionError(exception);
+		}
+	}
+
+
+	/**
+	 * Converts the given audio file content to the given audio frame format, and returns the resulting raw audio frames.
+	 * @param audioContent the audio file content to be converted
+	 * @param audioFrameFormat the audio frame format
+	 * @return the converted raw audio frame data
+	 * @throws NullPointerException if any of the given arguments is {@code null}
+	 * @throws IllegalArgumentException if the given audio format's frame size is negative, or if the audio format conversion is
+	 *         not supported
+	 * @throws UnsupportedAudioFileException if the given content is not valid audio file data recognized by the system
+	 */
+	static private byte[] convertToAudioFrames (final byte[] audioContent, final AudioFormat audioFrameFormat) throws NullPointerException, IllegalArgumentException, UnsupportedAudioFileException {
+		if (audioFrameFormat.getFrameSize() <= 0) throw new IllegalArgumentException();
+
+		try {
+			try (ByteArrayOutputStream byteSink = new ByteArrayOutputStream()) {
+				try (AudioInputStream audioSource = AudioSystem.getAudioInputStream(audioFrameFormat, AudioSystem.getAudioInputStream(new ByteArrayInputStream(audioContent)))) {
+					final byte[] buffer = new byte[audioFrameFormat.getFrameSize() << 10];
+					for (int bytesRead = audioSource.read(buffer); bytesRead != -1; bytesRead = audioSource.read(buffer)) {
+						byteSink.write(buffer, 0, bytesRead);
+					}
+				}
+
+				return byteSink.toByteArray();
+			}
+		} catch (final IOException exception) {
+			throw new AssertionError(exception);
+		}
+	}
+
+
+	/**
+	 * Converts the given raw audio frames into audio file content of the given audio file type. The given frame format should
+	 * match the given audio frame data, otherwise the result will be undefined.
+	 * @param audioFrameData the audio frame data to be converted
+	 * @param audioFrameFormat the audio frame format
+	 * @param audioFileType the audio file type
+	 * @return the converted audio file content
+	 * @throws NullPointerException if any of the given arguments is {@code null}
+	 * @throws IllegalArgumentException if the given audio format's frame size is negative
+	 */
+	static private byte[] convertToAudioContent (final byte[] audioFrameData, final AudioFormat audioFrameFormat, final Type audioFileType) throws NullPointerException, IllegalArgumentException {
+		if (audioFrameFormat.getFrameSize() <= 0) throw new IllegalArgumentException();
+		final long frameCount = audioFrameData.length / audioFrameFormat.getFrameSize();
+
+		try {
+			try (ByteArrayOutputStream audioSink = new ByteArrayOutputStream()) {
+				try (AudioInputStream audioSource = new AudioInputStream(new ByteArrayInputStream(audioFrameData), audioFrameFormat, frameCount)) {
+					AudioSystem.write(audioSource, audioFileType, audioSink);
+				}
+				return audioSink.toByteArray();
+			}
+		} catch (final IOException exception) {
+			throw new AssertionError(exception);
+		}
+	}
+
+
+	/**
+	 * Processes the given audio frame data using the given audio processor. The audio frame data must provided in PCM signed,
+	 * little endian format.
+	 * @param audioFrameData the audio frame data to be processed
+	 * @param audioFrameWidth the number of channels per audio frame
+	 * @param audioProcessor the audio processor
+	 * @throws NullPointerException if any of the given arguments is {@code null}
+	 * @throws IllegalArgumentException if the given audio frame width is negative
+	 */
+	static private void processAudioFrames (final byte[] audioFrameData, final int audioFrameWidth, final Processor audioProcessor) throws NullPointerException, IllegalArgumentException {
+		if (audioFrameWidth <= 0) throw new IllegalArgumentException();
+		final ByteBuffer frameBuffer = ByteBuffer.wrap(audioFrameData).order(LITTLE_ENDIAN);
+
+		final double[] frame = new double[audioFrameWidth];
+		while (frameBuffer.hasRemaining()) {
+			for (int channel = 0; channel < frame.length; ++channel) {
+				final double sample = (double) frameBuffer.getShort();
+				frame[channel] = sample * (sample >= 0 ? POS_NORM : NEG_NORM);
+			}
+
+			audioProcessor.process(frame);
+
+			for (int channel = 0; channel < frame.length; ++channel) {
+				double sample = frame[channel];
+				if (sample < -1) sample = -1;
+				if (sample > +1) sample = +1;
+				frameBuffer.putShort((short) Math.round(sample * (sample >= 0 ? POS_DENORM : NEG_DENORM)));
+			}
 		}
 	}
 }

@@ -7,7 +7,7 @@
 	// imports
 	const Controller = de_sb_radio.Controller;
 	let AUDIO_CONTEXT_CONSTRUCTOR = window.AudioContext || window.webkitAudioContext;
-	
+
 
 
 	/**
@@ -15,22 +15,21 @@
 	 */
 	const ServerRadioController = function () {
 		Controller.call(this);
-		
+
 		let localTracks = [];
 		Object.defineProperty(this, "tracks", {
 			enumerable: true,
 			configurable: false,
-			get: function () { 
+			get: function () {
 				return localTracks;
-			}	
+			}
 		});
-		
+
 		Object.defineProperty(this, "trackPosition", {
 			enumerable: true,
 			configurable: false,
-			value: 0,
-			writable: true
-			
+			writable: true,
+			value: -1
 		});
 	}
 	ServerRadioController.prototype = Object.create(Controller.prototype);
@@ -47,7 +46,7 @@
 		value: async function () {
 			if (!Controller.sessionOwner) {
 				const anchor = document.querySelector("header li:first-of-type > a");
-				anchor.dispatchEvent(new MouseEvent("click")); 
+				anchor.dispatchEvent(new MouseEvent("click"));
 				return;
 			}
 
@@ -55,8 +54,14 @@
 				let mainElement = document.querySelector("main");
 				let sectionElement = document.querySelector("#server-radio-template").content.cloneNode(true).firstElementChild;
 				let response, selectElement;
-				
-				response = await fetch("/services/tracks/genres", {method: "GET", credentials: "include", headers: {accept: "application/json"}});
+
+				response = await fetch("/services/tracks/genres", {
+					method: "GET",
+					credentials: "include",
+					headers: {
+						accept: "application/json"
+					}
+				});
 				if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
 				const genres = await response.json();
 
@@ -67,8 +72,14 @@
 					optionElement.value = genre;
 					selectElement.appendChild(optionElement);
 				}
-				
-				response = await fetch("/services/tracks/artists?resultOffset=0&resultLimit=100", {method: "GET", credentials: "include", headers: {accept: "application/json"}});
+
+				response = await fetch("/services/tracks/artists?resultOffset=0&resultLimit=100", {
+					method: "GET",
+					credentials: "include",
+					headers: {
+						accept: "application/json"
+					}
+				});
 				if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
 				const artists = await response.json();
 
@@ -79,7 +90,7 @@
 					optionElement.value = artist;
 					selectElement.appendChild(optionElement);
 				}
-				
+
 				mainElement.appendChild(sectionElement);
 				mainElement.querySelector("button").addEventListener("click", event => this.startRadio());
 			} catch (error) {
@@ -107,65 +118,96 @@
 				let artistSelectElement = sectionElement.querySelector('select[name="artists-select"]');
 				let genreElements = genreSelectElement.querySelectorAll("option");
 				let artistElements = artistSelectElement.querySelectorAll("option");
-				if (genreElements.length > 0 | artistElements.length > 0) uri += "?";	
-				
+				let playlistTable = sectionElement.querySelectorAll("table");
+
+				if (genreElements.length > 0 | artistElements.length > 0) uri += "?";
+
 				for (let genreElement of genreElements) {
 					if (genreElement.selected) {
 						uri += "genre=" + genreElement.text + "&";
 					}
 				}
-				
+
 				for (let artistElement of artistElements) {
 					if (artistElement.selected) {
 						uri += "artist=" + artistElement.text + "&";
 					}
 				}
-				
+
 				if (uri.endsWith("&")) uri = uri.substring(0, uri.length - 1);
-				let response = await fetch(uri, {method: "GET", credentials: "include", headers: {accept: "application/json"}});
+				let response = await fetch(uri, {
+					method: "GET",
+					credentials: "include",
+					headers: {
+						accept: "application/json"
+					}
+				});
 				if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
 				const tracks = await response.json();
-				this.tracks.length = 0;
 				Array.prototype.push.apply(this.tracks, tracks);
-				this.trackPosition = 0;
-				
+
+				let tableElement = document.createElement("table");
+				sectionElement.appendChild(tableElement);
+
 				for (let track of this.tracks) {
-					let p = document.createElement("p")
-					p.appendChild(document.createTextNode(track.name));
-					sectionElement.appendChild(p);
+					let rowElement = document.createElement("tr");
+					let cellElement;
+
+					let coverElement = document.createElement("img");				
+				    const uriAlbum = "/services/albums/" + track.albumReference;
+					let response = await fetch(uriAlbum, { method: "GET", credentials: "include", headers: {Accept: "application/json"}});
+					if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
+					const album = await response.json();
+					
+					coverElement.src =  "/services/documents/" + album.coverReference + "?width=80&height=80";
+					cellElement = document.createElement("td");
+					cellElement.appendChild(coverElement);
+					rowElement.appendChild(cellElement);
+
+					cellElement = document.createElement("td");
+					cellElement.appendChild(document.createTextNode(track.artist));
+					rowElement.appendChild(cellElement);
+					
+					cellElement = document.createElement("td");
+					cellElement.appendChild(document.createTextNode(track.name));
+					rowElement.appendChild(cellElement);
+
+					tableElement.appendChild(rowElement);
 				}
-				
-				this.startTrack(tracks[0].recordingReference);
-				
-	
-	
-	
+
+				this.playNextTrack();
+
 			} catch (error) {
 				this.displayError(error);
 			}
 		}
 	});
-	
-	Object.defineProperty(ServerRadioController.prototype, "startTrack", {
+
+
+	Object.defineProperty(ServerRadioController.prototype, "playNextTrack", {
 		enumerable: false,
 		configurable: false,
-		value: async function (recordingReference) {
-				const uri = "/services/documents/" + recordingReference;
-				let response = await fetch(uri, {method: "GET", credentials: "include", headers: {accept: "audio/*"}});
-				if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
-				const audioBuffer = await response.arrayBuffer();
-				const decodedBuffer = await Controller.audioContext.decodeAudioData(audioBuffer);
-				let audioSource = Controller.audioContext.createBufferSource();
-				audioSource.loop = false;
-				audioSource.buffer = decodedBuffer;
-				audioSource.connect(Controller.audioContext.destination);
-				audioSource.start();
-				// TODO: Kann man aus decoded buffer die Audiolänge abfragen oder ermitteln?
-				// wenn ja, Länge zurückgeben. (vorzugsweise ms); Callback registrieren.
+		value: async function () {
+			if (this.tracks.length - 1 == this.trackPosition) return;
+			const track = this.tracks[++this.trackPosition];
+
+			const uri = "/services/documents/" + track.recordingReference;
+			let response = await fetch(uri, { method: "GET", credentials: "include", headers: { Accept: "audio/*"}});
+			if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
+			
+			const audioBuffer = await response.arrayBuffer();
+			const decodedBuffer = await Controller.audioContext.decodeAudioData(audioBuffer);
+			let audioSource = Controller.audioContext.createBufferSource();
+			audioSource.loop = false;
+			audioSource.buffer = decodedBuffer;
+			audioSource.connect(Controller.audioContext.destination);
+			audioSource.onended = () => this.playNextTrack();
+			audioSource.start();
+
+			// audioSource.onended = this.playNextTrack.bind(this); alternative zur Lambda Expression			
 		}
 	});
 
-	
 
 	/**
 	 * Perform controller callback registration during DOM load event handling.
@@ -175,4 +217,4 @@
 		const controller = new ServerRadioController();
 		anchor.addEventListener("click", event => controller.display());
 	});
-} ());
+}());

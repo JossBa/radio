@@ -138,7 +138,11 @@
 				mainElement.removeChild(mainElement.lastChild);
 			}
 			// TODO: to implement display receiver section.
-			console.log(Controller.audioSource);
+			let audioSource = Controller.audioContext.createBufferSource();
+				audioSource.loop = false;
+				audioSource.buffer = decodedBuffer;
+				audioSource.connect(Controller.audioContext.destination);
+				audioSource.start();
 		}
 	});
 	
@@ -184,10 +188,16 @@
 		configurable: false,
 		value: async function (stream) {
 				let optionElement = document.querySelector("main select.playlist option");
-				let audioSource = Controller.audioContext.createMediaStreamSource(stream);
+		 		const recordingFile = optionElement.filePath;
+				const audioBuffer = await readAsArrayBuffer(recordingFile);
+				const decodedBuffer = await Controller.audioContext.decodeAudioData(audioBuffer);
+				let audioSource = Controller.audioContext.createBufferSource();
 				audioSource.loop = false;
+				audioSource.buffer = decodedBuffer;
 				audioSource.connect(Controller.audioContext.destination);
-				// TODO: Kann man aus audio context / audioSource ein event call back registrieren für das ende des Liedes. 				
+				audioSource.start();
+				
+				// TODO: Kann man aus audioContext / audioSource ein event call back registrieren für das ende des Liedes. 				
 		}
 	});
 	
