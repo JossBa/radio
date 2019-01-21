@@ -45,6 +45,7 @@ import de.sb.radio.persistence.Document;
 import de.sb.radio.persistence.HashTools;
 import de.sb.radio.persistence.Person;
 import de.sb.radio.persistence.Track;
+import de.sb.radio.persistence.Transmission;
 import de.sb.radio.processor.Compressor;
 import de.sb.radio.processor.Processor;
 import de.sb.toolbox.Copyright;
@@ -179,7 +180,7 @@ public class EntityService {
 	@GET
 	@Path("people")
 	@Produces(APPLICATION_JSON)
-	public List<Person> returnPeople (
+	public List<Person> queryPeople (
 			@Context HttpHeaders headers,
 			@QueryParam("surname") String surname,
 			@QueryParam("forename") String forename,
@@ -243,13 +244,10 @@ public class EntityService {
 				throw new IllegalStateException(); // ErrorCode 500
 			person = new Person(defaultAvatar);
 		} else { // Person, die bereits in DB existiert updaten
-			person = radioManager.find(Person.class, personTemplate.getIdentity()); // Person
-																					// aus
-																					// DB
-																					// suchen
+			person = radioManager.find(Person.class, personTemplate.getIdentity()); 
+			
 			if (person == null)
-				throw new ClientErrorException(Status.NOT_FOUND); // code 404 //
-																	// Not FOund
+				throw new ClientErrorException(Status.NOT_FOUND);
 		}
 
 		if (personTemplate.getGroup() != USER && person.getGroup() == USER)
@@ -266,10 +264,14 @@ public class EntityService {
 		person.setForename(personTemplate.getForename());
 		person.setSurname(personTemplate.getSurname());
 		person.setEmail(personTemplate.getEmail());
-		person.getLastTransmission().setAddress(personTemplate.getLastTransmission().getAddress());
-		person.getLastTransmission().setTimestamp(personTemplate.getLastTransmission().getTimestamp());
+		
+		if (personTemplate.getLastTransmission() != null) {
+			if (person.getLastTransmission() == null) person.setLastTransmission(new Transmission());
+			person.getLastTransmission().setAddress(personTemplate.getLastTransmission().getAddress());
+			person.getLastTransmission().setTimestamp(personTemplate.getLastTransmission().getTimestamp());
+			person.getLastTransmission().setOffer(personTemplate.getLastTransmission().getOffer());
+		}
 
-		// person.setAvatar(personTemplate.getAvatar());
 		if (password != null)
 			person.setPasswordHash(HashTools.sha256HashCode(password));
 

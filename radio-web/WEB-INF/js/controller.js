@@ -12,6 +12,18 @@ this.de_sb_radio = this.de_sb_radio || {};
 	 */
 	const Controller = de_sb_radio.Controller = function () {}
 	
+	
+	/**
+	 * The globally accessible session owner entity.
+	 */
+	Object.defineProperty(Controller, "sessionOwner", {
+		enumerable : false,
+		configurable : false,
+		writable : true,
+		value : null
+	});
+	
+	
 	let localAudioContext = new AudioContext();
 	Object.defineProperty(Controller, "audioContext", {
 		enumerable: true,
@@ -98,16 +110,6 @@ this.de_sb_radio = this.de_sb_radio || {};
 		}
 	});
 
-
-	/**
-	 * The globally accessible session owner entity.
-	 */
-	Object.defineProperty(Controller, "sessionOwner", {
-		enumerable : false,
-		configurable : false,
-		writable : true,
-		value : null
-	});
 
 
 	/**

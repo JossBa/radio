@@ -66,9 +66,9 @@ public class Person extends BaseEntity {
 	@Size(min = 1, max = 31)
 	@Column(nullable = false, updatable = true, length = 31)
 	private String surname;
-
+	
 	@Valid
-	@Embedded
+	@Embedded 
 	private Transmission lastTransmission;
 
 	@ManyToOne(optional = false) // einzige änderbare Reference
@@ -98,7 +98,6 @@ public class Person extends BaseEntity {
 	public Person(final Document avatar) {
 		this.passwordHash = DEFAULT_HASH;
 		this.group = USER;
-		this.lastTransmission = new Transmission();
 		this.avatar = avatar;
 		this.tracks = Collections.emptySet();
 	}
@@ -168,6 +167,10 @@ public class Person extends BaseEntity {
 	@JsonbProperty
 	public Transmission getLastTransmission() {
 		return lastTransmission;
+	}
+
+	public void setLastTransmission(Transmission lastTransmission) {
+		this.lastTransmission = lastTransmission;
 	}
 
 

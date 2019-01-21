@@ -36,6 +36,7 @@ CREATE TABLE Person (
 	forename VARCHAR(31) NOT NULL,
 	lastTransmissionTimestamp BIGINT NULL,
 	lastTransmissionAddress VARCHAR(63) NULL,
+	lastTransmissionOffer VARCHAR(4096) NULL,
 	PRIMARY KEY (personIdentity),
 	UNIQUE KEY (email),
 	FOREIGN KEY (personIdentity) REFERENCES BaseEntity (identity) ON DELETE CASCADE ON UPDATE CASCADE,

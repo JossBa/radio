@@ -55,13 +55,7 @@
 				let sectionElement = document.querySelector("#server-radio-template").content.cloneNode(true).firstElementChild;
 				let response, selectElement;
 
-				response = await fetch("/services/tracks/genres", {
-					method: "GET",
-					credentials: "include",
-					headers: {
-						accept: "application/json"
-					}
-				});
+				response = await fetch("/services/tracks/genres", { method: "GET", credentials: "include", headers: { Accept: "application/json"}});
 				if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
 				const genres = await response.json();
 

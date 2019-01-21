@@ -5,15 +5,20 @@
 "use strict";
 
 (function () {
-	// imports
 	const Controller = de_sb_radio.Controller;
-
+	const TEN_MINUTES = 10 * 60 * 1000;
 
 	/**
 	 * Creates a new welcome controller that is derived from an abstract controller.
 	 */
 	const PeerRadioController = function () {
 		Controller.call(this);
+		
+		Object.defineProperty(this, "rtcConnection", {
+			enumerable: true,
+			configurable: false,
+			value: new RTCPeerConnection()
+		});
 	}
 	PeerRadioController.prototype = Object.create(Controller.prototype);
 	PeerRadioController.prototype.constructor = PeerRadioController;
@@ -44,63 +49,6 @@
 	});
 	
 	
-		/**
-	 * Peer to peer access
-	 */
-	Object.defineProperty(PeerRadioController.prototype, "initPeerAccess", {
-		enumerable: false,
-		configurable: false,
-		writable: false,
-		value: async function () {
-			  var constraints = {
-    		 	video: false,
-    			audio: true,
- 				 };
-			  if(navigator.mediaDevices.getUserMedia) {
-				    try {
-				       let stream =	await navigator.mediaDevices.getUserMedia(constraints);
-				   	   this.startTopTrack(stream);
-				    } catch (error) {
-				    	this.errorHandler(error);
-				    }
-			  } else {
-			    alert('Your browser does not support getUserMedia API');
-			  }						
-		}
-	});
-	
-	
-			/**
-	 * Peer to peer access
-	 */
-	Object.defineProperty(PeerRadioController.prototype, "errorHandler", {
-		enumerable: false,
-		configurable: false,
-		writable: false,
-		value: function (error) {
-			console.log(error);
-		}
-
-	});
-	
-	
-	
-	
-			/**
-	 * Get UserMedia
-	 */
-	Object.defineProperty(PeerRadioController.prototype, "getUserMediaSuccess", {
-		enumerable: false,
-		configurable: false,
-		writable: false,
-		value: function () {
-						
-		}
-	});
-	
-	
-	
-	
 	/**
 	 * Displays the sender section view.
 	 */
@@ -108,7 +56,7 @@
 		enumerable: false,
 		configurable: false,
 		writable: true,
-		value: function () {
+		value: async function () {
 		    
 			let mainElement = document.querySelector("main");
 			while (mainElement.childElementCount > 1) {
@@ -117,10 +65,32 @@
 
 			let sectionElement = document.querySelector("#peer-radio-sender-template").content.cloneNode(true).firstElementChild;
 			let inputElement = sectionElement.querySelector("input");
-			inputElement.addEventListener("change", event => this.addToPlaylist(event.target.files), false);
+			inputElement.addEventListener("change", event => this.addToPlaylist(event.target.files));
 			let buttonElement = sectionElement.querySelector("button");
 			buttonElement.addEventListener("click", event => this.removeFromPlaylist());	
 			mainElement.appendChild(sectionElement);
+			
+			const connectionOffer = await this.rtcConnection.createOffer({iceRestart: false, offerToReceiveAudio: true});
+			const transmission = { timestamp: Date.now(), address: null, offer: JSON.stringify(connectionOffer) };
+			Controller.sessionOwner.lastTransmission = transmission;
+			
+			const body = JSON.stringify(Controller.sessionOwner);
+			let response = await fetch("/services/people", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json"}, body: body });
+			if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
+			Controller.sessionOwner.version += 1;
+
+			/*if(navigator.mediaDevices.getUserMedia) {
+				    try {
+				       let stream =	await navigator.mediaDevices.getUserMedia(constraints);
+				   	   this.startTopTrack(stream);
+				    } catch (error) {
+				    	this.errorHandler(error);
+				    }
+			  } else {
+			    alert('Your browser does not support getUserMedia API');
+			  }
+			  */
+			  			
 		}
 	});
 	
@@ -132,20 +102,55 @@
 		enumerable: false,
 		configurable: false,
 		writable: true,
-		value: function () {
+		value: async function () {
 			let mainElement = document.querySelector("main");
 			while (mainElement.childElementCount > 1) {
 				mainElement.removeChild(mainElement.lastChild);
 			}
+			
+			const body = JSON.stringify(Controller.sessionOwner);
+			const uri = "/services/people?lastTransmissionTimestamp=" + (Date.now() - TEN_MINUTES);
+			let response = await fetch(uri, { method: "GET", credentials: "include", headers: { Accept: "application/json"}});
+			if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
+			const people = await response.json();
+			
+			let sectionElement = mainElement.querySelector("section:last-of-type");
+			
+			for (let person of people) {
+				let anchorElement = document.createElement("a");
+				anchorElement.appendChild(document.createTextNode(person.forename + " " + person.surname));
+				anchorElement.addEventListener("click", event => this.displayListenSection(person));
+				sectionElement.appendChild(anchorElement);	
+			}
+			
+			
+			/*
 			// TODO: to implement display receiver section.
 			let audioSource = Controller.audioContext.createBufferSource();
 				audioSource.loop = false;
 				audioSource.buffer = decodedBuffer;
 				audioSource.connect(Controller.audioContext.destination);
 				audioSource.start();
+				*/
 		}
 	});
 	
+	
+	Object.defineProperty(PeerRadioController.prototype, "displayListenSection", {
+		enumerable: false,
+		configurable: false,
+		value: function (person) {
+			const offerTemplate = JSON.parse(person.lastTransmission.offer);
+			let offer = new RTCSessionDescription({ type: "offer" });
+			for (let key of Object.keys(offerTemplate)) {
+				offer[key] = offerTemplate[key];
+			}
+			
+			console.log(offer);
+		}
+	});
+	
+		
 	
 	Object.defineProperty(PeerRadioController.prototype, "addToPlaylist", {
 		enumerable: false,
@@ -161,9 +166,9 @@
 				selectElement.appendChild(optionElement);
 			}
 			
-			if (empty && paths.length > 0) {
+			if (empty & paths.length > 0) {
 			//	this.startTopTrack();
-			 	this.initPeerAccess();	// async function call, wird nicht sofort ausgeführt
+			 	
 			} 
 			
 		}
@@ -202,8 +207,6 @@
 	});
 	
 	
-	
-	
 	/**
 	 * Returns a promise of array buffer content read from the given file,
 	 * which can be evaluated using the await command. The latter throws an
@@ -219,8 +222,6 @@
 	        reader.readAsArrayBuffer(file);
 	    });
 	}
-	
-	
 	
 	
 	/**
