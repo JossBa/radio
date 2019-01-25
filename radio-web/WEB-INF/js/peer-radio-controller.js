@@ -71,7 +71,7 @@
 			mainElement.appendChild(sectionElement);
 			
 			const connectionOffer = await this.rtcConnection.createOffer({iceRestart: false, offerToReceiveAudio: true});
-			const transmission = { timestamp: Date.now(), address: null, offer: JSON.stringify(connectionOffer) };
+			const transmission = { timestamp: Date.now(), address: null, offer: connectionOffer.sdp };
 			Controller.sessionOwner.lastTransmission = transmission;
 			
 			const body = JSON.stringify(Controller.sessionOwner);
@@ -140,12 +140,9 @@
 		enumerable: false,
 		configurable: false,
 		value: function (person) {
-			const offerTemplate = JSON.parse(person.lastTransmission.offer);
+			const offerSdp = person.lastTransmission.offer;
 			let offer = new RTCSessionDescription({ type: "offer" });
-			for (let key of Object.keys(offerTemplate)) {
-				offer[key] = offerTemplate[key];
-			}
-			
+			offer.sdp = offerSdp;			
 			console.log(offer);
 		}
 	});

@@ -80,13 +80,7 @@
 					selectElement.appendChild(optionElement);
 				}
 
-				response = await fetch("/services/tracks/artists?resultOffset=0&resultLimit=100", {
-					method: "GET",
-					credentials: "include",
-					headers: {
-						accept: "application/json"
-					}
-				});
+				response = await fetch("/services/tracks/artists", { method: "GET", credentials: "include", headers: { Accept: "application/json" }});
 				if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
 				const artists = await response.json();
 
@@ -154,14 +148,9 @@
 					}
 				}
 
-				if (uri.endsWith("&")) uri = uri.substring(0, uri.length - 1);
-				let response = await fetch(uri, {
-					method: "GET",
-					credentials: "include",
-					headers: {
-						accept: "application/json"
-					}
-				});
+				if (uri.endsWith("&")) uri += "resultLimit=100";
+				else uri += "?resultLimit=100";
+				let response = await fetch(uri, { method: "GET", credentials: "include", headers: { Accept: "application/json" }});
 				if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
 				const tracks = await response.json();
 				Array.prototype.push.apply(this.tracks, tracks);
