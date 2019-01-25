@@ -31,6 +31,14 @@
 			writable: true,
 			value: -1
 		});
+
+
+		Object.defineProperty(this, "compressionRatio", {
+			enumerable: true,
+			configurable: false,
+			writable: true,
+			value: 1
+		});
 	}
 	ServerRadioController.prototype = Object.create(Controller.prototype);
 	ServerRadioController.prototype.constructor = ServerRadioController;
@@ -54,12 +62,17 @@
 				let mainElement = document.querySelector("main");
 				let sectionElement = document.querySelector("#server-radio-template").content.cloneNode(true).firstElementChild;
 				let response, selectElement;
+				let compressionRatioElement;
+
 
 				response = await fetch("/services/tracks/genres", { method: "GET", credentials: "include", headers: { Accept: "application/json"}});
 				if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
 				const genres = await response.json();
 
 				selectElement = sectionElement.querySelector('select[name="genres-select"]');
+
+				compressionRatioElement = sectionElement.querySelector('input[type=range]');
+			    compressionRatioElement.addEventListener('change', event => this.changeCompressionRatio(compressionRatioElement.value));
 				for (let genre of genres) {
 					let optionElement = document.createElement("option");
 					optionElement.appendChild(document.createTextNode(genre));
@@ -90,6 +103,19 @@
 			} catch (error) {
 				this.displayError(error);
 			}
+
+
+
+
+		}
+	});
+
+
+	Object.defineProperty(ServerRadioController.prototype, "changeCompressionRatio", {
+		enumerable: false,
+		configurable: false,
+		value:  function (newCompressionRatio) {
+			this.compressionRatio = newCompressionRatio;
 		}
 	});
 
@@ -185,7 +211,7 @@
 			if (this.tracks.length - 1 == this.trackPosition) return;
 			const track = this.tracks[++this.trackPosition];
 
-			const uri = "/services/documents/" + track.recordingReference;
+			const uri = "/services/documents/" + track.recordingReference + "?compressionRatio=" + this.compressionRatio ;
 			let response = await fetch(uri, { method: "GET", credentials: "include", headers: { Accept: "audio/*"}});
 			if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
 			

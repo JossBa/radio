@@ -195,3 +195,16 @@ section.messages textarea {
 }
 
 
+
+
+table  {
+	padding-top: 20px;
+}
+	
+td:first-child {
+	min-width: auto;
+}
+
+td {
+	min-width: 220px;
+	}
