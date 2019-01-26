@@ -4,9 +4,10 @@
  * http://webdesignerwall.com/tutorials/css3-dropdown-menu
  */
 body {
-	width: 50em; margin: 2em 3em; line-height: 1.5em;
-	font-size: 14px; font-family: Arial, Helvetica, sans-serif;
-	color: #221100; background: #ebebeb;
+	// width: 50em;
+	 margin: 2em 3em; line-height: 1.5em;
+	font-size: 14px; font-family: MONOSPACE;
+	color: #221100; background: wheat;
 }
 
 
@@ -46,12 +47,27 @@ textarea {
 	font-size: inherit; font-family: inherit;
 }
 
+
 button, input[type="button"] {
-	border-radius: 0.2em; padding: 0.1em 1.5em;
-	color: #444444; background: linear-gradient(#ebebeb,  #a1a1a1);
-	font-weight: bold; text-shadow: 0 1px 0 rgba(255, 255, 255, .8);
+	display:inline-block;
+	padding:0.35em 1.2em;
+	border:0.1em solid black;
+	margin:0 0.3em 0.3em 0;
+	border-radius:0.12em;
+	box-sizing: border-box;
+	text-decoration:none;
+	font-family:'Roboto',sans-serif;
+	font-weight:300;
+	color:black;
+	text-align:center;
+	transition: all 0.2s;
+	margin-top: 1vw; 
 }
 
+button:hover {
+ color:white;
+ background-color: black;
+}
 
 label.horizontal {
 	display: inline-block; width: 5em; text-align: right;
@@ -84,9 +100,15 @@ a:hover img {
 }
 
 
+nav {
+width: 650px;
+
+}
+
 nav ul {
 	padding: .55em .5em 0 .5em;
-	border: solid 1px #6d6d6d; border-radius: 2em; background: linear-gradient(#a9a9a9,  #7a7a7a);
+	border: solid 1px #6d6d6d; border-radius: 2em;
+	background: #46199299;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, .4);
 }
 
@@ -106,14 +128,25 @@ nav a {
 }
 
 nav li.selected a, nav li:hover a {
-	color: #444444; background: linear-gradient(#ebebeb,  #a1a1a1); border-top: solid 1px #f0f0f0; border-radius: 0.2em;
+	color: #444444;
+	border-top: solid 1px #f0f0f0; border-radius: 5em;
+	background: white;
 	text-shadow: 0 1px 0 rgba(255, 255, 255, .8); box-shadow: 0 1px 1px rgba(0, 0, 0, .2);
 }
 
+section.login {
+	width: 30em;
+	border-top: solid 1px #f0f0f0; 
+	border-radius: 0.2em;
+
+}
 
 section.login input {
 	width: 20em;
 }
+
+
+
 
 
 section.preferences fieldset:nth-of-type(1) img {
@@ -199,6 +232,7 @@ section.messages textarea {
 
 table  {
 	padding-top: 20px;
+	float: left;
 }
 	
 td:first-child {
@@ -208,3 +242,11 @@ td:first-child {
 td {
 	min-width: 220px;
 	}
+
+
+p {
+    float: left;
+    width: 300px;
+	margin: 20px;
+	margin-left: 60px;
+}

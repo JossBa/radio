@@ -93,13 +93,10 @@
 				}
 
 				mainElement.appendChild(sectionElement);
-				mainElement.querySelector("button").addEventListener("click", event => this.startRadio());
+					mainElement.querySelector("button").addEventListener("click", event => this.startRadio());
 			} catch (error) {
 				this.displayError(error);
 			}
-
-
-
 
 		}
 	});
@@ -212,11 +209,43 @@
 			audioSource.connect(Controller.audioContext.destination);
 			audioSource.onended = () => this.playNextTrack();
 			audioSource.start();
+			this.showLyrics();
+			
+			
 
 			// audioSource.onended = this.playNextTrack.bind(this); alternative zur Lambda Expression			
 		}
 	});
 
+
+	Object.defineProperty(ServerRadioController.prototype, "showLyrics", {
+		enumerable: false,
+		configurable: false,
+		value: async function () {
+			let sectionElement = document.querySelector("main > section");
+			let removeParagraphElement = document.querySelector("main > section > p");
+			if (removeParagraphElement) sectionElement.removeChild(removeParagraphElement);
+		
+    
+			const artistName = this.tracks[this.trackPosition].artist;
+			const trackName = this.tracks[this.trackPosition].name;
+			const apikey = "cGQaEsCquz1lmSIoJtS0spfd32vwRZSC31WZFnKjNgkJHDlypfDagPr8oVzjNYr7";
+			
+			const uri = "https://orion.apiseeds.com/api/music/lyric/" + artistName  + "/" + trackName + "?apikey=" + apikey;
+			const response = await fetch(uri, { method: "GET", headers: { Accept: "application/json"}});
+			if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
+			const result = await response.json();
+			const lyricsText = result.result.track.text;
+		
+			let paragraphElement = document.createElement("p");
+			paragraphElement.appendChild(document.createTextNode(lyricsText));
+			sectionElement.appendChild(paragraphElement);
+			
+			
+		}
+	});
+		
+		
 
 	/**
 	 * Perform controller callback registration during DOM load event handling.
