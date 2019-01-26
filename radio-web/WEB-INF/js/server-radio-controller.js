@@ -211,6 +211,9 @@
 			audioSource.start();
 			this.showLyrics();
 			
+			const tableElement = document.querySelector("main > section > table");
+			if (tableElement.children[this.trackPosition-1] ) tableElement.children[this.trackPosition-1].classList.remove("songSelected");
+			tableElement.children[this.trackPosition].classList.add("songSelected");
 			
 
 			// audioSource.onended = this.playNextTrack.bind(this); alternative zur Lambda Expression			
