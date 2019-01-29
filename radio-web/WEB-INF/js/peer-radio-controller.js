@@ -49,6 +49,7 @@
 	});
 	
 	
+	
 	/**
 	 * Displays the sender section view.
 	 */
@@ -59,9 +60,13 @@
 		value: async function () {
 		    
 			let mainElement = document.querySelector("main");
+
 			while (mainElement.childElementCount > 1) {
+			    console.log(mainElement.lastChild);
 				mainElement.removeChild(mainElement.lastChild);
 			}
+			
+
 
 			let sectionElement = document.querySelector("#peer-radio-sender-template").content.cloneNode(true).firstElementChild;
 			let inputElement = sectionElement.querySelector("input");
@@ -114,13 +119,25 @@
 			if (!response.ok) throw new Error("HTTP " + response.status + " " + response.statusText);
 			const people = await response.json();
 			
+
 			let sectionElement = mainElement.querySelector("section:last-of-type");
+
+			let tableElement = document.createElement("table");
+			sectionElement.appendChild(tableElement);
 			
 			for (let person of people) {
+				let rowElement = document.createElement("tr");
+				let cellElement;
+			
+				cellElement = document.createElement("td");
 				let anchorElement = document.createElement("a");
 				anchorElement.appendChild(document.createTextNode(person.forename + " " + person.surname));
 				anchorElement.addEventListener("click", event => this.displayListenSection(person));
-				sectionElement.appendChild(anchorElement);	
+				cellElement.appendChild(anchorElement);	
+				rowElement.appendChild(cellElement);
+				
+				// at the end append all elements to table
+				tableElement.appendChild(rowElement);
 			}
 			
 			
@@ -142,8 +159,10 @@
 		value: function (person) {
 			const offerSdp = person.lastTransmission.offer;
 			let offer = new RTCSessionDescription({ type: "offer" });
-			offer.sdp = offerSdp;			
+			offer.sdp = offerSdp;
+						
 			console.log(offer);
+		
 		}
 	});
 	

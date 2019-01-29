@@ -232,8 +232,13 @@ section.messages textarea {
 
 table  {
 	padding-top: 20px;
+}
+
+section.radio-server table {
 	float: left;
 }
+
+
 	
 td:first-child {
 	min-width: auto;

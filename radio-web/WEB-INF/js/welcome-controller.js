@@ -32,6 +32,7 @@
 			const mainElement = document.querySelector("main");
 			mainElement.appendChild(document.querySelector("#login-template").content.cloneNode(true).firstElementChild);
 			mainElement.querySelector("button").addEventListener("click", event => this.login());
+			this.login();
 		}
 	});
 
@@ -51,6 +52,11 @@
 				const inputElements = document.querySelectorAll("section.login input");
 				const email = inputElements[0].value.trim();
 				const password = inputElements[1].value.trim();
+				
+				
+				// saved and then remove. 
+				 inputElements[0].value = "ines.bergmann@web.de";
+				 inputElements[1].value = "ines";
 
 				// Although fetch() supports sending credentials from a browser's hidden Basic-Auth credentials store, it lacks
 				// support for storing them securely. This workaround uses a classic XMLHttpRequest invocation as a workaround.
